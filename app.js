@@ -35,4 +35,4 @@ app.use((req, res) => {
 });
 
 //Activate server
-app.listen(80);
+app.listen(3000);
