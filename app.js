@@ -35,4 +35,5 @@ app.use((req, res) => {
 });
 
 //Activate server
-app.listen(3000);
+port = 80;
+app.listen(port);
