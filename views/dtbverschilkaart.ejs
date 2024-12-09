@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>  
+
+    <%- include('./partials/head.ejs') %>
+
+    <body>
+
+        <%- include('./partials/header.ejs') %>
+
+        <div class="container">
+            <a href="/dtbverschilkaart/create" style="color:rgb(51, 79, 190)">Nieuwe verschilkaart genereren</a>
+            <form id="geojsonForm">
+                <label for="geojsonId">Bestaande verschilkaart bekijken op basis van ID</label>
+                <input type="text" id="geojsonId" name="geojsonId" required>
+                <button type="submit" class="buttonstyle">Inladen</button> <span style="color:red;"><%= resultMessage %></span>
+            </form>
+        </div>
+		<div id="map" class="container2"></div>
+        <script src="/verschilkaart.js"></script>
+        <script>
+            const inputGeojson = <%- JSON.stringify(resultGeojson) %>;
+            loadGeojson(inputGeojson);
+        </script>
+    </body>
+</html>

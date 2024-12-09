@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+    
+    <%- include('./partials/head.ejs') %>
+
+    <body>
+
+        <%- include('./partials/header.ejs') %>
+    
+        <div class="container">
+            <a href="/dtbverschilkaart" style="color:rgb(51, 79, 190)">Bestaande verschilkaart bekijken</a>
+            <form method="post" action="create" enctype="multipart/form-data">
+                <label>Upload Uitsnede</label>
+                <input type="file" id="uitsnede" name="uitsnede" class="buttonstyle">
+                <br>
+                <label>Upload Mutatie</label>
+                <input type="file" id="mutatie" name="mutatie" class="buttonstyle">
+                <br>
+                <button type="submit" class="buttonstyle">Verschilkaart generen</button>
+            </form>
+            <%= resultMessage %>
+            <br>
+            <% if(resultLink != "") { %>
+            <a href=<%= resultLink %> style="color:rgb(51, 79, 190)">Klik hier om de verschilkaart te bekijken</a>
+            <% } %>
+        </div>
+    </body>
+    <script>
+        //Make sure the url doesn't change after clicking submit
+        document.getElementById('uploadForm').addEventListener('submit', async function (event) {
+            event.preventDefault(); 
+        });
+    </script>
+</html>
