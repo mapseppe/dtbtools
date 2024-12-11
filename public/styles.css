@@ -8,7 +8,7 @@
         /* Body Styling */
         body {
             background-color: white;
-            font-family: 'Trebuchet MS', Tahoma, sans-serif;
+            font-family: Verdana, Geneva, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -20,6 +20,7 @@
         /* Top Bar Styling */
         .top-bar {
             width: 100%;
+            font-family: 'Trebuchet MS', Tahoma, sans-serif;
             background-color: yellow;
             padding: 10px 0;
             display: flex;
@@ -85,7 +86,7 @@
         }
         
         .buttonstyle {
-            font-family: 'Trebuchet MS', Tahoma, sans-serif;
+            font-family: Verdana, Geneva, sans-serif;
             padding: 2px 2px;
         }
         

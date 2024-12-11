@@ -56,7 +56,7 @@ router.post('/dtbverschilkaart/create', uploadFields, (req, res) => {
     // Rename to randomly generated number
     const oldNameUitsnede = 'data/temp/uitsnede.zip';
     const oldNameMutatie = 'data/temp/mutatie.zip';
-    const randomNumber = Math.floor(100000 + Math.random() * 900000);
+    const randomNumber = Math.floor(10000000 + Math.random() * 90000000);
     const newNameUitsnede = `data/temp/${randomNumber}_u.zip`;
     const newNameMutatie = `data/temp/${randomNumber}_m.zip`;
 

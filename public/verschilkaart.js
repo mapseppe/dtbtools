@@ -53,7 +53,7 @@ function pointToLayer(feature, latlng) {
 function onEachFeature(feature, layer) {
 	if (feature.properties) {
         var popupContent = "<b>DTB ID:</b> " + feature.properties.DTB_ID + "<br>" +
-                           "<b>Object:</b> " + feature.properties.THEMA + "<br>" +
+                           "<b>Object:</b> " + feature.properties.TYPE_OMSCHRIJVING + "<br>" +
                            "<b>Status:</b> " + feature.properties.STATUS + "<br>";
         layer.bindPopup(popupContent);
 	}

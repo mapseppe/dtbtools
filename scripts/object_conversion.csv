@@ -1,0 +1,405 @@
+TYPE_CODE,TYPE_OMSCHRIJVING,CTE_CODE
+10102,Antenne,B0301
+10103,Bemalingsinstallatie,B0305
+10104,Bewegingswerktuig,B0307
+10108,Gashouder,B0311
+10113,Luchtkoker,B0327
+10114,Molen,B0329
+10116,Ornament,Q39
+10117,Pijler,B0335
+10118,Pompstation,B0333
+10119,Schakelstation,R69
+10120,Schoorsteen,B0339
+10121,Silo,B0341
+10123,Tank,B0351
+10126,Uitwateringssluis,B034513
+10401,Dijkpaal,R5103
+10402,Hectometerbord,R5107
+10501,Hoogtepunt,H03
+10901,Verdrijfpijl links,R910503
+10902,Verdrijfpijl rechts,R910504
+10903,Verfsymbool,MD44
+10904,Voorsorteerpijl linksaf,R9105011
+10905,Voorsorteerpijl rechtdoor,R9105013
+10906,Voorsorteerpijl rechtdoor/linksaf,R9105012
+10907,Voorsorteerpijl rechtdoor/rechtsaf,R9105014
+10908,Voorsorteerpijl rechtdoor/rechtsaf/linksaf,MD39
+10909,Voorsorteerpijl rechtsaf,R9105015
+10910,Voorsorteerpijl rechtsaf/linksaf,MD40
+11001,Bank,Q03
+11002,Boom,Q09
+11003,Brandblusser,MD23
+11004,Brandkraan,Q1101
+11005,Brandput,Q15
+11007,Bushalte,F1901
+11009,Hoogspanningsmast,Q3301
+11010,Kabelbord met kabelaansluiting,Q4103011
+11011,Kabelbord,Q4103012
+11012,Kast,Q29
+11013,Luidspreker,MD24
+11014,Mast,Q33
+11015,Meteo-instrument,Q35
+11018,Peilput,Q43
+11019,Peilschaal,Q45
+11021,Picknicktafel,MD36
+11022,Pomp,Q49
+11023,Prullenbak/vuilnisbak,Q51
+11025,Reclamebord/zuil,Q53
+11026,Reddingsmiddel,MD25
+11028,Snuffelpaal,Q4105
+11029,Telefooncel,Q63
+11030,Verklikker transportleiding,Q410303
+11032,Zinkerbord met kabelaansluiting,Q4103051
+11033,Zinkerbord,Q4103052
+11034,Zonnepaneel,MD34
+11035,Laadpaal,MD58
+11036,Bloembak,Q05
+11037,Boom buiten OVZ,Q09
+11038,Hoogtedetector,Q10
+11039,Pontonpaal,Q11
+11403,Navigatielicht,R4705
+11404,Verkeerslicht,R8705
+11405,Verlichtingsobject,R86
+11501,Noodtelefoon,R370703
+11502,Dukdalf,R19
+11503,Kilometerraaibord,R5111
+11504,Meerpaal,R43
+11505,Meerstoel,R45
+11506,Schepenteller,MD13
+11601,Aankondigingsbord met kabelaansluiting,R510101
+11602,Aankondigingsbord zonder kabelaansluiting,R510103
+11603,Baken,R4701
+11604,Bermbeschermingsblok punt,MD41
+11605,Bolder,R11
+11606,Camera algemeen,R15
+11607,Drukknoppaal,R8701
+11608,Dynamisch route informatiepaneel,MD26
+11609,Kolk,R6307
+11613,Matrixbord,R8703
+11614,Mottobord,R5115
+11615,Naambord,R0703
+11616,Radar,R410105
+11619,Praatpaal,R370705
+11621,Put(deksel),R63
+11624,Roodlichtcamera,R1501
+11625,Sein,R71
+11626,Slagboom,R73
+11627,Trap,R83
+11628,Tv-camera,R1503
+11629,Verkeersbord met kabelaansluiting,R870701
+11630,Verkeersbord,R870703
+11631,Wegwijzer met kabelaansluiting,R070101
+11632,Wegwijzer,R070103
+11633,Windzak,R95
+11634,Glasbolreflector,MD45
+11635,Overstapconstructie geleiderail,MD56
+11636,Instructiebord,MD62
+11637,Vluchtdeur,MD68
+11638,Camera,R16
+20102,Muur,T0103
+20103,Noklijn,B0551
+20106,Sluisdeur,MD16
+20108,Stuw,B0349
+20501,Breuklijn,ZH1
+20502,Dakrand,B0553
+20504,Hoogteverschillijn,H05
+20506,Kribrug,R0501
+20507,Kruinlijn,MD31
+20508,"Kruinlijn, winterdijk",MD30
+20801,Afvoerbuis,L0701
+20802,Hoogspanningsleiding,L0101
+20804,Laagspanningsleiding,L0103
+20805,Persleiding,L0707
+20901,Blokstreep,R9101031
+20902,Onderbrokenstreep,R910103
+20903,Driehoekmarkering,R910309
+20904,Doorgetrokkenstreep,R910105
+20905,Groene streep,MD47
+21001,Bomenrij/laanbeplanting,Q07
+21002,Duiker,Q23
+21005,Vuilvangrooster,Q71
+21006,Boombrug,MD52
+21007,Vleermuispassage,MD53
+21008,Stobbenwal,MD54
+21009,Ballenlijn,MD55
+21010,Drijfbalk,MD56
+21011,Hoogtebegrenzer,MD57
+21102,Doorgang,T0101
+21103,Greppel,W030701
+21104,Haag met raster,T030101
+21104,Haag met raster,T030101
+21104,Haag met raster,T030101
+21104,Haag met raster,T030101
+21106,Voegovergang,MD50
+21108,Haag/heg,T0301
+21108,Haag/heg,T0301
+21108,Haag/heg,T0301
+21108,Haag/heg,T0301
+21112,Sloot insteek,ZH5
+21114,Kunstmatige scheidingslijn,MD29
+21117,Opnamegrens,MD9
+21118,Raster,T0105
+21118,Raster,T0105
+21118,Raster,T0105
+21118,Raster,T0105
+21119,Leuning,MD57
+21124,Generalisatiegrens,MD32
+21125,Talud bovenkant,ZH7
+21126,Talud onderkant,ZH6
+21129,Waterniveaulijn,W09
+21132,Wildraster,T010501
+21132,Wildraster,T010501
+21132,Wildraster,T010501
+21132,Wildraster,T010501
+21401,Lijnverlichting,MD4
+21601,Bermbeschermingsblok,MD41
+21603,Breedspoor,R750101
+21604,Coupure,R17
+21605,Damwand,R3105
+21607,Geleidebarrier,R030101
+21608,Geleiderailconstructie,R030103
+21609,Geluidsbeperkende constructie lijn,R2503
+21611,Hoogtedetectieportaal,R6103
+21612,Hoogtedetectieportaal half,R6103
+21613,Kademuur,R3107
+21614,Ecotunnel,R210103
+21615,Normaalspoor,R7503
+21616,Palenrij,R0503
+21617,Parkeerpalenrij,MD10
+21618,Portaal,R61
+21619,Portaal (half),MD11
+21620,Remmingwerk,R65
+21621,Smalspoor,R7505
+21622,Trap,R83
+21623,Verblindingswering,R85
+21625,Waarschuwingshek,R9009
+21627,Schanskorf,MD46
+21628,Wildrichel,MD48
+21629,Fauna uitstapplaats,MD61
+21632,Spoor,R7506
+21633,Terminal,R030104
+21634,Verhoogde Rijbaan Scheiding l,R030104
+30101,Abri,B0501
+30102,Barak,B0505
+30103,Bedieningsgebouw,B0507
+30104,Bloembak,Q05
+30105,Boerderij,B010501
+30106,Botenhuis,B0509
+30107,Bunker,B0511
+30108,Dienstverleningsgebouw,B010301
+30109,Elektriciteitscentrale,B0103512
+30110,Elektriciteitsgebouw,B0515
+30111,Garage,B0517
+30112,Gebedshuis,B010303
+30113,Gebouw algemeen,B01
+30114,Handelsgebouw,B010305
+30115,Hangar,B0519
+30116,Hok,B0521
+30117,Horecagebouw,B010307
+30118,Huis,B010103
+30119,Huizen,B010103
+30120,Industriegebouw,B010309
+30121,Kantoorgebouw,B010311
+30122,Kas,B0523
+30123,Kasteel,B010105
+30124,Kiosk,B0527
+30125,Klooster,B010107
+30126,Loods,B0529
+30128,Onderwijsgebouw,B010313
+30130,Parkeergarage,MD14
+30131,Pastorie,B010109
+30132,Paviljoen,B0533
+30133,Recreatiegebouw,B010315
+30134,Rijwielstalling,B0535
+30135,Ru?ne,B0537
+30136,Schuur,B0539
+30137,Stal,B0541
+30138,Toiletgebouw,B0545
+30139,Verzorgingsgebouw,B010317
+30140,Winkelhuis,B010503
+30141,Woonflat,B010111
+30142,Open Loods,MD65
+30143,Gebouw,B02
+30202,Bitumineuze bekleding,V030101
+30203,Cementbeton bekleding,V030103
+30204,Steen bekleding,V0303
+30205,Stortsteen bekleding,V0305
+30302,Agrarisch algemeen,N03
+30303,Bloembollenveld,N0305
+30304,Houtachtige vegetatie,N0503
+30305,Bomengroep,N0503051
+30306,Boomgaard,N0303
+30307,Bos,N0503031
+30308,Bouwland/akkerland,N030101
+30309,Braak,N010903
+30310,Delfstofwinning,N0107
+30311,Duin,N0103
+30312,Gors/kwelder/schor,N010101
+30313,Grasland/produktiegrasland,N030103
+30314,Grazige vegetatie,N050101
+30315,Griend,N0503032
+30316,Groenvoorziening algemeen,N05
+30317,Hakhout,N0503033
+30318,Heide,N050103
+30319,Houtwal,T0303
+30320,Kwekerij,N0307
+30321,Moeras,N0501051
+30322,"Niet- of halfingerichte grond, algemeen",N01
+30323,Niet te zien,MD38
+30324,Rietland,N0501053
+30325,Siervegetatie,N0501091
+30326,Slik/wad,N010103
+30327,Spoorbaan,MD43
+30328,Strand,N010503
+30329,Struiken,N0503036
+30330,Tuinachtige grond,N07
+30331,Tuinbouwgrond,N0309
+30332,Werk in uitvoering,N010907
+30333,Zand,N0105
+30337,Geen Informatie Benodigd,N02
+30601,Antenne,B0301
+30602,Bassin,B0303
+30603,Bemalingsinstallatie,B0305
+30604,Beschoeiing,R3101
+30606,Damwand,R3105
+30607,Gashouder,B0311
+30608,Geluidsbeperkende constructie vlak,R2503
+30609,Heftoren,MD15
+30610,Hooiberg,B0315
+30611,Inlaatsluis,B034501
+30612,Inundatiesluis,B034503
+30614,Kademuur,R3107
+30615,Kast/huis algemeen,Q29
+30616,Keersluis,B034505
+30617,Kunstwerk/installatie algemeen,B03
+30618,Landhoofd,F23
+30619,Lift,MD35
+30620,Luchtkoker,B0327
+30621,Molen,B0329
+30622,Muur,T0103
+30623,Navigatielicht,R4705
+30625,Ornament,Q39
+30626,Perron,R55
+30627,Pijler,B0335
+30628,Pompstation,B0333
+30629,Radarpost,B030105
+30630,Schakelstation,R69
+30631,Schoorsteen,B0339
+30633,Silo,B0341
+30635,Sluisdeur,MD16
+30636,Spuisluis,B034509
+30638,Stuw,B0349
+30639,Tank,B0351
+30640,Tijsluis,B034511
+30641,Trap,R83
+30642,Uitkijktoren,Q65
+30643,Uitwateringssluis,B034513
+30645,Watertoren,B0357
+30646,Weegbrug,B0359
+30648,Schanskorf,MD46
+30649,Put(deksel) vlak,R63
+30650,Gemaal,MD59
+30651,Bezinkbak,MD67
+30653,Lage trafo,MD66
+30655,Windturbine,MD64
+30656,Sluis,B034512
+30701,Aquaduct,F01
+30702,Brug,F07
+30703,Flyover,F7101
+30704,Loopbrug,R39
+30705,Plankier,R57
+30706,Steiger,R81
+30707,Tunnel,F67
+30709,Viaduct,F71
+30710,Vonder,R88
+30711,Ecoduct,R210101
+30712,Ecotunnel,R210103
+30901,Oversteekplaats (brom-)fietsers,R910307
+30902,Puntstuk,R910517
+30903,Verdrijfstrepen,R910519
+30904,Voetgangersoversteekplaats,R910305
+31001,Afdak,B0503
+31002,Ark,Q01
+31003,Drijvend dok,Q19
+31004,Duiker,Q23
+31006,Ponton,R59
+31007,Zonnepaneel,MD34
+31201,Begraafplaats,F03
+31203,Bungalowpark,F09
+31206,Camping,F13
+31208,Erf,F15
+31209,Industrieterrein,F21
+31212,Luchtvaartterrein,F31
+31214,Militair terrein,F35
+31215,Opslagplaats,F41
+31216,Park,F43
+31218,Plantsoen,F51
+31219,Recreatieterrein,F53
+31220,Rioolwaterzuiveringsinstallatie,F55
+31221,Scheepswerf,F57
+31222,Speeltuin,F59
+31224,Sportterrein,F63
+31225,Transformatorstation,F65
+31226,Volkstuinen,F73
+31227,Vuilstortplaats,F75
+31228,Waterleidingbedrijf,F77
+31229,Woonwagencentrum,F81
+31230,Zwembad,F83
+31231,Scheepshelling,MD55
+31301,Verharding algemeen,V01
+31302,Beton,V010103
+31302,Beton,Q19
+31302,Beton,R27
+31302,Beton,F29
+31302,Beton,F47
+31307,Beton elementen,V0103031
+31307,Beton elementen,F29
+31307,Beton elementen,F47
+31310,Bitumen,V010101
+31310,Bitumen,R27
+31310,Bitumen,F29
+31310,Bitumen,F47
+31314,Groensteenverharding,V010305
+31315,Ongebonden verharding,V010307
+31315,Ongebonden verharding,F47
+31317,Houtverharding,V0103011
+31318,Keiverharding,V0103012
+31319,Klinkers,V0103013
+31319,Klinkers,R27
+31319,Klinkers,F29
+31319,Klinkers,F47
+31325,Natuursteenverharding,V0103032
+31328,Onverharde weg,V0105
+31328,Onverharde weg,F47
+31330,Tegels,V0103015
+31330,Tegels,R27
+31330,Tegels,F47
+31333,Vloeistofdichte verharding,MD37
+31334,Kunststof,R27
+31335,Verhoogde Rijbaanscheiding,R28
+31501,Beek,W0103
+31502,Gracht,W0305
+31503,Kanaal,W0301
+31503,Kanaal,B034507
+31503,Kanaal,MD49
+31505,Kreek,W0105
+31506,Meer,W0505
+31506,Meer,MD49
+31507,Plas,W0701
+31507,Plas,MD49
+31508,Rivier,W0101
+31508,Rivier,B034507
+31508,Rivier,MD49
+31509,Sloot,W030703
+31510,Ven,W0703
+31511,Vijver,W0705
+31512,Wiel,W0707
+31513,Zee,W0501
+31513,Zee,MD49
+31514,Meerstoel,R45
+31602,Rimpelbuis-obstakelbeveiliger,R030303
+31603,Rooster,MD42
+31604,Coupure,R17
+31605,Verkeersdrempel,MD33
+31607,Verkeersdrempel belijnd,MD63
+,onbekend,

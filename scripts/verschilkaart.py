@@ -5,13 +5,12 @@ import pandas as pd
 import sys
 import zipfile
 import shutil
+import fiona
 
 job_id = sys.argv[1]
-#job_id = 909090
 
 scriptDirectory = os.path.dirname(os.path.abspath(__file__))
 basePath = os.path.abspath(os.path.join(scriptDirectory, '..'))
-#basePath = r"C:\Users\crist\Business\Coding\DTBprojects"
 
 def prepareInputdata(basePath, job_id):
     uitsnedePathZip = os.path.join(basePath, 'data', 'temp', str(job_id)) + '_u.zip'
@@ -35,7 +34,89 @@ def prepareInputdata(basePath, job_id):
         zip_ref.extractall(uitsnedeUnzipPath)
     with zipfile.ZipFile(mutatiePathZip, 'r') as zip_ref:
         zip_ref.extractall(mutatieUnzipPath)
-    listShapefiles(uitsnedeUnzipPath, mutatieUnzipPath)
+    checkInput(uitsnedeUnzipPath, mutatieUnzipPath)
+
+def checkInput(uitsnedePath, mutatiePath):
+    gdbcheckU = glob.glob(os.path.join(uitsnedePath, "*.gdb"))
+    gdbcheckM = glob.glob(os.path.join(mutatiePath, "*.gdb"))
+    shpcheckU = glob.glob(os.path.join(uitsnedePath, "*.shp"))
+    shpcheckM = glob.glob(os.path.join(mutatiePath, "*.shp"))
+    gdbCondition = False
+    shpCondition = False
+    #Check if each folder has 1 .gdb file
+    if len(gdbcheckU) == 1 and len(gdbcheckM) == 1:
+        gdbCondition = True
+        gdbPathUitsnede = gdbcheckU[0]
+        gdbPathMutatie = gdbcheckM[0]
+        listGdbfiles(gdbPathUitsnede, gdbPathMutatie)
+    #Check if each folder has 1 or more .shp files
+    if len(shpcheckU) >= 1 and len(shpcheckM) >= 1:
+        shpCondition = True
+        listShapefiles(uitsnedePath, mutatiePath)
+    if not gdbCondition and not shpCondition:
+        print("(Error) Uploads bevatten niet beide exact 1 .gdb folder OF minimaal 1 .shp file")
+        deleteUploads(basePath)
+
+def listGdbfiles(uitsnedePath, mutatiePath):
+    layersUitsnede = fiona.listlayers(uitsnedePath)
+    layersMutatie = fiona.listlayers(mutatiePath)
+    listDifference = set(layersUitsnede).symmetric_difference(layersMutatie)
+    if len(listDifference) > 0:
+        print("(Error) Verschillende feature classes tussen bestanden: " + str(listDifference))
+        deleteUploads(basePath)
+    else:
+        checkGdbDiff(uitsnedePath, layersUitsnede, mutatiePath, layersMutatie)
+
+def checkGdbDiff(uitsnedePath, layersUitsnede, mutatiePath, layersMutatie):
+    outputDf = pd.DataFrame({
+                    'DTB_ID': pd.Series(dtype='str'),
+                    'NIVEAU': pd.Series(dtype='str'),
+                    'TYPE': pd.Series(dtype='str'),
+                    'ROTATIE': pd.Series(dtype='str'),
+                    'OBJECTTYPE': pd.Series(dtype='str'),
+                    'STATUS': pd.Series(dtype='str'),
+                    'geometry': pd.Series(dtype='str')
+                    })
+    outputGdf = gpd.GeoDataFrame(outputDf, crs="EPSG:28992")
+    layersMutatie = [layer for layer in layersMutatie if 'DTB_' in layer]
+    layersUitsnede = [layer for layer in layersUitsnede if 'DTB_' in layer]
+    
+    #Compare EVERY layer in both .gdb folders and append new/old/changed features
+    for dtbLayer in layersMutatie:
+        layerUitsnede = gpd.read_file(uitsnedePath, layer=dtbLayer)
+        layerMutatie = gpd.read_file(mutatiePath, layer=dtbLayer)
+        layerMutatie['STATUS'] = ''
+        layerUitsnede['STATUS'] = ''
+    
+        layerNew = layerMutatie[~layerMutatie['DTB_ID'].isin(layerUitsnede['DTB_ID'])].copy()
+        if not layerNew.empty:
+            layerNew.loc[:, 'STATUS'] = 'Nieuw'
+
+        layerDel = layerUitsnede[~layerUitsnede['DTB_ID'].isin(layerMutatie['DTB_ID'])].copy()
+        if not layerDel.empty:
+            layerDel.loc[:, 'STATUS'] = 'Verwijderd'
+
+        layerMerge = layerMutatie.merge(layerUitsnede, on='DTB_ID', suffixes=('', '_u'))
+        layerCompare = layerMerge[layerMerge['geometry_u'] != layerMerge['geometry']]
+        layerChange = layerCompare[layerMutatie.columns].copy()
+        if not layerChange.empty:
+            layerChange.loc[:, 'STATUS'] = 'Veranderd'
+        
+        layerDifference = gpd.GeoDataFrame(pd.concat([layerNew, layerDel, layerChange], ignore_index=True))
+        if not layerDifference.empty:
+            layerMatch = [col for col in outputGdf.columns if col in layerDifference.columns]
+            outputGdf = gpd.GeoDataFrame(pd.concat([layerDifference[layerMatch], outputGdf], ignore_index=True))
+    
+    #Output it
+    lookupTableFile = os.path.join(scriptDirectory, 'object_conversion.csv')
+    lookupTable = pd.read_csv(lookupTableFile, delimiter=',')
+    lookupMerge = outputGdf.merge(lookupTable, left_on='TYPE', right_on='TYPE_CODE', how='left')
+    totalDifference = lookupMerge.drop(columns=['TYPE_CODE'])
+    totalDifference4326 = totalDifference.to_crs(epsg=4326)
+    outputPath = os.path.join(basePath, 'data', str(job_id))
+    totalDifference4326.to_file(outputPath + '.geojson', driver="GeoJSON")
+    print("Verschilkaart maken succesvol afgerond met ID: " + str(job_id))
+    deleteUploads(basePath)
 
 def listShapefiles(uitsnedeFolder, mutatieFolder):
     shapesUitsnede = []
@@ -53,9 +134,9 @@ def listShapefiles(uitsnedeFolder, mutatieFolder):
         print("(Error) Verschillende feature classes tussen bestanden: " + str(listDifference))
         deleteUploads(basePath)
     else:
-        checkDiff(uitsnedeFolder, mutatieFolder)
+        checkShpDiff(uitsnedeFolder, mutatieFolder)
 
-def checkDiff(uitsnedeFolder, mutatieFolder):
+def checkShpDiff(uitsnedeFolder, mutatieFolder):
     #Define all 3 before-after files to be compared
     puntU = gpd.read_file(os.path.join(uitsnedeFolder, "PUNT.shp"))
     lijnU = gpd.read_file(os.path.join(uitsnedeFolder, "LIJN.shp"))
@@ -116,10 +197,14 @@ def checkDiff(uitsnedeFolder, mutatieFolder):
     vlakDifference = gpd.GeoDataFrame(pd.concat([vlakNew, vlakDel, vlakChange], ignore_index=True))
 
     #Samenvoegen eindresultaat en exported naar geojson
-    TotalDifference = gpd.GeoDataFrame(pd.concat([puntDifference, lijnDifference, vlakDifference], ignore_index=True))
-    TotalDifference4326 = TotalDifference.to_crs(epsg=4326)
+    combinedDifference = gpd.GeoDataFrame(pd.concat([puntDifference, lijnDifference, vlakDifference], ignore_index=True))
+    lookupTableFile = os.path.join(scriptDirectory, 'object_conversion.csv')
+    lookupTable = pd.read_csv(lookupTableFile, delimiter=',')
+    lookupMerge = combinedDifference.merge(lookupTable, left_on='CTE', right_on='CTE_CODE', how='left')
+    totalDifference = lookupMerge.drop(columns=['CTE_CODE'])
+    totalDifference4326 = totalDifference.to_crs(epsg=4326)
     outputPath = os.path.join(basePath, 'data', str(job_id))
-    TotalDifference4326.to_file(outputPath + '.geojson', driver="GeoJSON")
+    totalDifference4326.to_file(outputPath + '.geojson', driver="GeoJSON")
     print("Verschilkaart maken succesvol afgerond met ID: " + str(job_id))
     deleteUploads(basePath)
 
