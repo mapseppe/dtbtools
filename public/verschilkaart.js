@@ -14,7 +14,9 @@ var osm = L.tileLayer(osmUrl, {
 var dtbUrl = "https://geo.rijkswaterstaat.nl/arcgis/rest/services/GDR/dtb/MapServer";
 var dtbLayer = L.esri.dynamicMapLayer({
 	url: dtbUrl,
-	layers: [0,1,3]
+	layers: [0,1,3],
+    minZoom: 17,
+    maxZoom: 20
 }).addTo(map);
 
 // Function to style features based on the STATUS attribute
