@@ -15,11 +15,35 @@
                 <button type="submit" class="buttonstyle">Inladen</button> <span style="color:red;"><%= resultMessage %></span>
             </form>
         </div>
-		<div id="map" class="container2"></div>
+        <div class="map-and-table-container">
+            <div id="map" class="container2">
+            </div>
+            <div id="geojson-table-container" class="container2">
+                <!-- Legend div -->
+                <div id="legend" class="legend-container">
+                    <h3>Legenda:</h3>
+                    <ul>
+                        <li><span class="legend-color" style="background-color:green;"></span>Nieuwe objecten</li>
+                        <li><span class="legend-color" style="background-color:red;"></span>Verwijderd objecten</li>
+                        <li><span class="legend-color" style="background-color:blue;"></span>Veranderde nieuwe object(delen)</li>
+                        <li><span class="legend-color" style="background-color:gray;"></span>Veranderd oude object(delen)</li>
+                    </ul>
+                </div>
+                <div id="geojson-table"></div>
+                <button id="downloadButton" class="buttonstyle">Download GeoJSON</button>
+            </div>
+            
+        </div>
         <script src="/verschilkaart.js"></script>
+        <script src="/verschiltabel.js"></script>
+        <script src="/downloadgeojson.js"></script>
         <script>
             const inputGeojson = <%- JSON.stringify(resultGeojson) %>;
             loadGeojson(inputGeojson);
+            generateGeojsonTable(inputGeojson);
+            document.getElementById('downloadButton').addEventListener('click', function() {
+                downloadGeojson(inputGeojson);
+            });
         </script>
     </body>
 </html>

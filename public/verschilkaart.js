@@ -6,7 +6,7 @@ var osmUrl = 'https://a.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}@2x.png'
 var osmAttrib = 'Map tiles by CartoDB, under CC BY 3.0. Data by OpenStreetMap, under ODbL';
 var osm = L.tileLayer(osmUrl, {
     minZoom: 1,
-    maxZoom: 20,
+    maxZoom: 24,
     attribution: osmAttrib
 }).addTo(map);
 
@@ -16,7 +16,7 @@ var dtbLayer = L.esri.dynamicMapLayer({
 	url: dtbUrl,
 	layers: [0,1,3],
     minZoom: 17,
-    maxZoom: 20
+    maxZoom: 24
 }).addTo(map);
 
 // Function to style features based on the STATUS attribute
@@ -24,13 +24,16 @@ function getFeatureStyle(feature) {
     const statusColors = {
         'Nieuw': 'green',
         'Verwijderd': 'red',
-        'Veranderd': 'blue'
+        'Veranderd Nieuw': 'blue',
+        'Veranderd Oud': 'grey'
     };
+    const fillColor = statusColors[feature.properties.STATUS] || 'transparent';
     return {
-        color: statusColors[feature.properties.STATUS] || 'black', // Fallback color
-        weight: feature.geometry.type === 'LineString' ? 3 : 1,
-        fillColor: statusColors[feature.properties.STATUS] || 'blue',
-        fillOpacity: 0.5
+        color: fillColor,         // Border color (same as fill color)
+        weight: 2,                // Set the weight of the border (thickness)
+        opacity: 0.5,
+        fillColor: fillColor,     // Fill color based on STATUS
+        fillOpacity: 0.5          // Opacity of the fill color
     };
 }
 
@@ -39,27 +42,44 @@ function pointToLayer(feature, latlng) {
     const statusColors = {
         'Nieuw': 'green',
         'Verwijderd': 'red',
-        'Veranderd': 'blue'
+        'Veranderd ': 'blue'
     };
     return L.circleMarker(latlng, {
         radius: 4,
-        fillColor: statusColors[feature.properties.STATUS] || 'blue',
+        fillColor: statusColors[feature.properties.STATUS],
         color: '#000',
         weight: 1,
-        opacity: 1,
-        fillOpacity: 0.8
+        opacity: 0.5,
+        fillOpacity: 0.5
     });
 }
 
 //Stuff for eachfeature
 function onEachFeature(feature, layer) {
-	if (feature.properties) {
+    if (feature.properties && feature.properties.STATUS !== 'Veranderd') {
         var popupContent = "<b>DTB ID:</b> " + feature.properties.DTB_ID + "<br>" +
                            "<b>Object:</b> " + feature.properties.TYPE_OMSCHRIJVING + "<br>" +
                            "<b>Status:</b> " + feature.properties.STATUS + "<br>";
+
+        var paneName = 'feature-' + feature.properties.TYPE_OMSCHRIJVING;
+        if (!map.getPane(paneName)) {
+            map.createPane(paneName); 
+            map.getPane(paneName).style.zIndex = 500;
+            console.log('Pane created: ' + paneName);
+        } else {
+            console.log('Pane already exists: ' + paneName);
+        }
+        layer.options.pane = paneName;
         layer.bindPopup(popupContent);
-	}
+
+        // Add click event listener to each feature
+        layer.on('click', function(e) {
+            // Bring the clicked feature to the front
+            e.target.bringToFront();
+        });
+    }
 }
+
 
 // Function to load GeoJSON, apply symbology, and zoom to the layer
 function loadGeojson(input) {

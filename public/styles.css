@@ -104,8 +104,10 @@
         }
         
         #map {
-            height: 550px;
-            width: 90%;
+            height: 750px;
+            width: 75%; /* Adjust the width percentage of the map */
+            margin-right: 20px; /* Add margin to the right of the map to create white space */
+            z-index: 1;  /* Ensure map is behind the button */
         }
 
         /* Container for the title */
@@ -114,4 +116,78 @@
             width: 100px;
             text-align: left;
             line-height: 20px;
+        }
+        .map-and-table-container {
+            display: flex;
+            justify-content: space-between; /* Ensure map and table are on opposite sides */
+            width: 90%; /* Adjust the width as needed */
+            margin-top: 20px;
+        }
+        
+        /* Table Styling */
+        #geojson-table-container {
+            width: 28%; /* Adjust the width percentage for the table and legend */
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        
+        th {
+            background-color: #f2f2f2;
+        }
+        .legend-container {
+            margin-bottom: 20px;
+            font-size: 1rem;
+        }
+        
+        .legend-container h3 {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .legend-container ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .legend-container li {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .legend-color {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+        }
+        #geojson-table {
+            margin-top: 20px;
+            width: 100%; /* Ensure the table takes up the full width of the container */
+            height: 550px; /* Set a fixed height for the table */
+            overflow-y: auto; /* Enable vertical scrolling if content overflows */
+            display: block; /* Makes the table a block element to allow scrolling */
+        }
+        #geojson-table table {
+            width: 100%; /* Ensure the table takes up full width of container */
+            border-collapse: collapse; /* Collapse borders */
+        }
+        #geojson-table table th,
+        #geojson-table table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        #downloadButton {
+            margin-top: 20px; /* Add some space between the table and the button */
         }
