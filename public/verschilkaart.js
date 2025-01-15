@@ -30,7 +30,7 @@ function getFeatureStyle(feature) {
     const fillColor = statusColors[feature.properties.STATUS] || 'transparent';
     return {
         color: fillColor,         // Border color (same as fill color)
-        weight: 2,                // Set the weight of the border (thickness)
+        weight: 3,                // Set the weight of the border (thickness)
         opacity: 0.5,
         fillColor: fillColor,     // Fill color based on STATUS
         fillOpacity: 0.5          // Opacity of the fill color

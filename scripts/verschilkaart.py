@@ -124,8 +124,8 @@ def checkGdbDiff(uitsnedePath, layersUitsnede, mutatiePath, layersMutatie):
                                                     lambda row: row['geometry_u'].difference(row['geometry']) if row['geometry_u'] is not None and row['geometry'] is not None else None, 
                                                     axis=1
                                                 )
-            layerChangeNewF = layerChangeNewF[~layerChangeNewF['geometry'].is_empty]
-            layerChangeOldF = layerChangeOldF[~layerChangeOldF['geometry'].is_empty]
+            layerChangeNewF = layerChangeNew[~layerChangeNew['geometry'].is_empty]
+            layerChangeOldF = layerChangeOld[~layerChangeOld['geometry'].is_empty]
             layerChangeNewF = layerChangeNew[layerMutatie.columns].copy()
             layerChangeOldF = layerChangeOld[layerMutatie.columns].copy()
             layerChangeNewF.loc[:, 'STATUS'] = 'Veranderd Nieuw'
@@ -190,10 +190,6 @@ def checkShpDiff(uitsnedeFolder, mutatieFolder):
     lijnM = load_shapefile(mutatieFolder, "LIJN.shp")
     vlakM = load_shapefile(mutatieFolder, "VLAK.shp")
     
-    #Add and calculate AREA field
-    vlakU['area'] = vlakU.geometry.area
-    vlakM['area'] = vlakM.geometry.area
-    
     puntDifference = gpd.GeoDataFrame()
     lijnDifference = gpd.GeoDataFrame()
     vlakDifference = gpd.GeoDataFrame()
@@ -208,25 +204,41 @@ def checkShpDiff(uitsnedeFolder, mutatieFolder):
         if not puntDel.empty:
             puntDel.loc[:, 'STATUS'] = 'Verwijderd'
         
-        puntMerge = puntM.merge(puntU, on='DTB_ID', suffixes=('', '_u'))
+        puntMerge = puntM.merge(puntU, on='DTB_ID', how='inner', suffixes=('', '_u'))
         puntCompare = puntMerge[puntMerge['geometry_u'] != puntMerge['geometry']]
         puntChange = puntCompare[puntM.columns].copy()
         if not puntChange.empty:
             puntChange.loc[:, 'STATUS'] = 'Veranderd'
+            
+            puntChangeNew = puntCompare.copy()
+            puntChangeOld = puntCompare.copy()
+            puntChangeNew['geometry'] = puntCompare.apply(lambda row: row['geometry'].difference(row['geometry_u']), axis=1)
+            puntChangeOld['geometry'] = puntCompare.apply(lambda row: row['geometry_u'].difference(row['geometry']), axis=1)
+            puntChangeNewF = puntChangeNew[puntM.columns].copy()
+            puntChangeOldF = puntChangeOld[puntM.columns].copy()
+            puntChangeNewF = puntChangeNewF[~puntChangeNewF['geometry'].is_empty]
+            puntChangeOldF = puntChangeOldF[~puntChangeOldF['geometry'].is_empty]
+            puntChangeNewF.loc[:, 'STATUS'] = 'Veranderd Nieuw'
+            puntChangeOldF.loc[:, 'STATUS'] = 'Veranderd Oud'
         
-        puntDifference = gpd.GeoDataFrame(pd.concat([puntNew, puntDel, puntChange], ignore_index=True))
+        if 'puntChangeNewF' not in locals():
+            puntChangeNewF = gpd.GeoDataFrame(columns=puntM.columns)
+        if 'puntChangeOldF' not in locals():
+            puntChangeOldF = gpd.GeoDataFrame(columns=puntM.columns)
+        
+        puntDifference = gpd.GeoDataFrame(pd.concat([puntNew, puntDel, puntChange, puntChangeNewF, puntChangeOldF], ignore_index=True))
     
     #New geodataframes for lines
     if lijnU is not None and lijnM is not None:
         lijnNew = lijnM[~lijnM['DTB_ID'].isin(lijnU['DTB_ID'])].copy()
         if not lijnNew.empty:
-            lijnNew.loc[:, 'STATUS'] = 'Veranderd'
+            lijnNew.loc[:, 'STATUS'] = 'Nieuw'
 
         lijnDel = lijnU[~lijnU['DTB_ID'].isin(lijnM['DTB_ID'])].copy()
         if not lijnDel.empty:
             lijnDel.loc[:, 'STATUS'] = 'Verwijderd'
         
-        lijnMerge = lijnM.merge(lijnU, on='DTB_ID', suffixes=('', '_u'))
+        lijnMerge = lijnM.merge(lijnU, on='DTB_ID', how='inner', suffixes=('', '_u'))
         lijnCompare = lijnMerge[lijnMerge['geometry_u'] != lijnMerge['geometry']]
         lijnChange = lijnCompare[lijnM.columns].copy()
         if not lijnChange.empty:
@@ -242,11 +254,18 @@ def checkShpDiff(uitsnedeFolder, mutatieFolder):
             lijnChangeOldF = lijnChangeOldF[~lijnChangeOldF['geometry'].is_empty]
             lijnChangeNewF.loc[:, 'STATUS'] = 'Veranderd Nieuw'
             lijnChangeOldF.loc[:, 'STATUS'] = 'Veranderd Oud'
+            
+        if 'lijnChangeNewF' not in locals():
+            lijnChangeNewF = gpd.GeoDataFrame(columns=lijnM.columns)
+        if 'lijnChangeOldF' not in locals():
+            lijnChangeOldF = gpd.GeoDataFrame(columns=lijnM.columns)
         
         lijnDifference = gpd.GeoDataFrame(pd.concat([lijnNew, lijnDel, lijnChange, lijnChangeNewF, lijnChangeOldF], ignore_index=True))
     
     #New geodataframes for polygons
     if vlakU is not None and vlakM is not None:
+        vlakU['area'] = vlakU.geometry.area
+        vlakM['area'] = vlakM.geometry.area
         vlakNew = vlakM[~vlakM['DTB_ID'].isin(vlakU['DTB_ID'])].copy()
         if not vlakNew.empty:
             vlakNew.loc[:, 'STATUS'] = 'Nieuw'
@@ -255,7 +274,7 @@ def checkShpDiff(uitsnedeFolder, mutatieFolder):
         if not vlakDel.empty:
             vlakDel.loc[:, 'STATUS'] = 'Verwijderd'
         
-        vlakMerge = vlakM.merge(vlakU, on='DTB_ID', suffixes=('', '_u'))
+        vlakMerge = vlakM.merge(vlakU, on='DTB_ID', how='inner', suffixes=('', '_u'))
         vlakCompare = vlakMerge[vlakMerge['area_u'] != vlakMerge['area']]
         vlakChange = vlakCompare[vlakM.columns].copy()
         if not vlakChange.empty:
@@ -283,7 +302,8 @@ def checkShpDiff(uitsnedeFolder, mutatieFolder):
     combinedDifference = gpd.GeoDataFrame(pd.concat([puntDifference, lijnDifference, vlakDifference], ignore_index=True))
     lookupTableFile = os.path.join(scriptDirectory, 'object_conversion.csv')
     lookupTable = pd.read_csv(lookupTableFile, delimiter=',')
-    lookupMerge = combinedDifference.merge(lookupTable, left_on='CTE', right_on='CTE_CODE', how='left')
+    lookupTable_unique = lookupTable.drop_duplicates(subset='CTE_CODE')
+    lookupMerge = combinedDifference.merge(lookupTable_unique, left_on='CTE', right_on='CTE_CODE', how='left')
     totalDifference = lookupMerge.drop(columns=['CTE_CODE'])
     totalDifference4326 = totalDifference.to_crs(epsg=4326)
     outputPath = os.path.join(basePath, 'data', str(job_id))
