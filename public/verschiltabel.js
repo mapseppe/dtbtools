@@ -8,10 +8,10 @@ function generateGeojsonTable(geojson) {
     }
 
     // Define the specific fields to display
-    const fieldsToDisplay = ['TYPE_OMSCHRIJVING', 'STATUS', 'DTB_ID'];
+    const fieldsToDisplay = ['TYPE_oud', 'TYPE_nieuw', 'STATUS', 'DTB_ID'];
 
     // Define valid statuses to filter by
-    const validStatuses = ['Nieuw', 'Verwijderd', 'Veranderd'];
+    const validStatuses = ['Nieuw', 'Verwijderd', 'Veranderd', 'Veranderd deel'];
 
     const table = document.createElement("table");
     const thead = document.createElement("thead");

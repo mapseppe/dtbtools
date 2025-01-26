@@ -16,10 +16,8 @@
             </form>
         </div>
         <div class="map-and-table-container">
-            <div id="map" class="container2">
-            </div>
+            <div id="map" class="container2"></div>
             <div id="geojson-table-container" class="container2">
-                <!-- Legend div -->
                 <div id="legend" class="legend-container">
                     <h3>Legenda:</h3>
                     <ul>
@@ -29,10 +27,12 @@
                         <li><span class="legend-color" style="background-color:gray;"></span>Veranderde oude object(delen)</li>
                     </ul>
                 </div>
+                <span><h3>Aangeklikte Objecten</h3></span>
+                <div id="proximity-results-container"></div>
+                <span><h3>Alle Objecten</h3></span>
                 <div id="geojson-table"></div>
                 <button id="downloadButton" class="buttonstyle">Download Verschilkaart (GeoJSON)</button>
             </div>
-            
         </div>
         <script src="/verschilkaart.js"></script>
         <script src="/verschiltabel.js"></script>

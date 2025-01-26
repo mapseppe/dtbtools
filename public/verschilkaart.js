@@ -11,7 +11,7 @@ var osm = L.tileLayer(osmUrl, {
 }).addTo(map);
 
 //DTBmap
-var dtbUrl = "https://geo.rijkswaterstaat.nl/arcgis/rest/services/GDR/dtb/MapServer";
+var dtbUrl = "https://geo.rijkswaterstaat.nl/arcgis/rest/services/GDR/dtb/MapServer?sr=4326";
 var dtbLayer = L.esri.dynamicMapLayer({
 	url: dtbUrl,
 	layers: [0,1,3],
@@ -58,49 +58,161 @@ function pointToLayer(feature, latlng) {
 function onEachFeature(feature, layer) {
     if (feature.properties && feature.properties.STATUS !== 'Veranderd') {
         var popupContent = "<b>DTB ID:</b> " + feature.properties.DTB_ID + "<br>" +
-                           "<b>Object:</b> " + feature.properties.TYPE_OMSCHRIJVING + "<br>" +
+                           "<b>Object (oud):</b> " + feature.properties.TYPE_oud + "<br>" +
+                           "<b>Object (nieuw):</b> " + feature.properties.TYPE_nieuw + "<br>" +
                            "<b>Status:</b> " + feature.properties.STATUS + "<br>";
-
-        var paneName = 'feature-' + feature.properties.TYPE_OMSCHRIJVING;
-        if (!map.getPane(paneName)) {
-            map.createPane(paneName); 
-            map.getPane(paneName).style.zIndex = 500;
-            console.log('Pane created: ' + paneName);
-        } else {
-            console.log('Pane already exists: ' + paneName);
-        }
-        layer.options.pane = paneName;
-        layer.bindPopup(popupContent);
-
-        // Add click event listener to each feature
-        layer.on('click', function(e) {
-            // Bring the clicked feature to the front
-            e.target.bringToFront();
-        });
+        };
     }
-}
 
+function convertMultiGeometriesToSingle(input) {
+    const features = input.features.map(feature => {
+        if (feature.geometry && feature.geometry.type) {
+            if (feature.geometry.type === 'MultiPolygon') {
+                const polygons = feature.geometry.coordinates.map(coords => {
+                    return {
+                        type: 'Feature',
+                        geometry: {
+                            type: 'Polygon',
+                            coordinates: coords
+                        },
+                        properties: feature.properties
+                    };
+                });
+                return polygons;
+            } else if (feature.geometry.type === 'MultiLineString') {
+                const lines = feature.geometry.coordinates.map(coords => {
+                    return {
+                        type: 'Feature',
+                        geometry: {
+                            type: 'LineString',
+                            coordinates: coords
+                        },
+                        properties: feature.properties
+                    };
+                });
+                return lines;
+            } else {
+                return feature;  // No need to modify if it's already a single geometry type
+            }
+        } else {
+            // If geometry is null or undefined, skip this feature (or handle as needed)
+            console.warn('Feature without valid geometry:', feature);
+            return [];
+        }
+    }).flat();
+
+    return {
+        type: 'FeatureCollection',
+        features: features
+    };
+}
 
 // Function to load GeoJSON, apply symbology, and zoom to the layer
 function loadGeojson(input) {
-    var geojsonLayer = L.geoJSON(input, {
+    const geojsonData = convertMultiGeometriesToSingle(input);
+
+    const points = geojsonData.features.filter(feature => feature.geometry.type === 'Point');
+    const lines = geojsonData.features.filter(feature => feature.geometry.type === 'LineString');
+    const polygons = geojsonData.features.filter(feature => feature.geometry.type === 'Polygon');
+
+    const polygonsLayer = L.geoJSON(polygons, {
         style: function(feature) {
-            return getFeatureStyle(feature); // Apply style to polygons and lines
+            return getFeatureStyle(feature);
         },
-        pointToLayer: function(feature, latlng) {
-            return pointToLayer(feature, latlng); // Apply style to points
+        zIndex: 1,
+        onEachFeature: onEachFeature
+    })
+    const linesLayer = L.geoJSON(lines, {
+        style: function(feature) {
+            return getFeatureStyle(feature);
         },
-		onEachFeature: onEachFeature
-    }).addTo(map);
+        zIndex: 2,
+        onEachFeature: onEachFeature
+    })
+    const pointsLayer = L.geoJSON(points, {
+        style: function(feature) {
+            return getFeatureStyle(feature);
+        },
+        pointToLayer: pointToLayer,
+        zIndex: 3,
+        onEachFeature: onEachFeature
+    })
+    const verschilkaartLayer = L.layerGroup([pointsLayer, linesLayer, polygonsLayer]);
+    verschilkaartLayer.addTo(map);
 
     // Zoom to the bounds of the GeoJSON layer after it's added to the map
-    map.fitBounds(geojsonLayer.getBounds());
+    let combinedBounds = pointsLayer.getBounds();
+    combinedBounds.extend(linesLayer.getBounds());
+    combinedBounds.extend(polygonsLayer.getBounds());
+    map.fitBounds(combinedBounds);
 	//Layer control in the top left for the selection/toggleability of layers
 	var mapControl = {
-		"Verschilkaart": geojsonLayer,
+		"Verschilkaart": verschilkaartLayer,
 		"DTB": dtbLayer };
 	var basmapControl = {
 		"Achtergrondkaart": osm };
 	var layerControl = L.control.layers(basmapControl, mapControl).addTo(map);
 }
 
+let lastMarker = null;
+map.on('click', function(event) {
+    const latlng = event.latlng;
+    const proximityRadius = 1;
+    if (lastMarker) {
+        map.removeLayer(lastMarker);
+    }
+    checkProximity(latlng, proximityRadius);
+    const plusIcon = L.divIcon({
+        className: 'plus-icon',
+        html: '+',
+        iconAnchor: [17, 11]
+    });
+    lastMarker = L.marker(latlng, { icon: plusIcon }).addTo(map);
+});
+
+const style = document.createElement('style');
+style.innerHTML = `
+    .plus-icon {
+        font-size: 60px !important;
+        color: black;
+        text-align: center;
+    }
+`;
+document.head.appendChild(style);
+
+function checkProximity(latlng, radius) {
+    const buffer = turf.buffer(turf.point([latlng.lng, latlng.lat]), radius, { units: 'meters' });
+    let intersectingFeatures = [];
+    inputGeojson.features.forEach(function(feature) {
+        let featureGeometry = feature.geometry;
+        if (turf.booleanIntersects(featureGeometry, buffer)) {
+            intersectingFeatures.push(feature);
+        }
+    });
+    showResults(intersectingFeatures);
+}
+
+function showResults(features) {
+    const tableContainer = document.getElementById('proximity-results-container');
+    let html = '<table><tr><th>DTB ID</th><th>Object (oud)</th><th>Object (nieuw)</th><th>Status</th></tr>';
+    
+    // Filter out features where 'Status' is 'Veranderd'
+    const filteredFeatures = features.filter(function(feature) {
+        return feature.properties.STATUS !== 'Veranderd';
+    });
+
+    if (filteredFeatures.length === 0) {
+        html += '<tr><td colspan="4">No features found with the selected status.</td></tr>';
+    } else {
+        filteredFeatures.forEach(function(feature) {
+            html += `<tr>
+                        <td>${feature.properties.DTB_ID}</td>
+                        <td>${feature.properties.TYPE_oud}</td>
+                        <td>${feature.properties.TYPE_nieuw}</td>
+                        <td>${feature.properties.STATUS}</td>
+                    </tr>`;
+        });
+    }
+    html += '</table>';
+    tableContainer.innerHTML = html;
+}

@@ -104,29 +104,34 @@
         }
         
         #map {
-            height: 750px;
-            width: 75%; /* Adjust the width percentage of the map */
-            margin-right: 20px; /* Add margin to the right of the map to create white space */
-            z-index: 1;  /* Ensure map is behind the button */
+            height: 100%; /* Ensure the map takes up the full height */
+            width: 65%; /* Adjust the width percentage of the map */
+            margin-right: 20px; /* Add margin to the right of the map */
+            z-index: 1;
         }
 
         /* Container for the title */
         .container2 {
-            margin-top: 10px; /* Space below the fixed top bar */
-            width: 100px;
+            width: 100%;
             text-align: left;
             line-height: 20px;
+            display: flex;
+            flex-direction: column;
         }
         .map-and-table-container {
             display: flex;
             justify-content: space-between; /* Ensure map and table are on opposite sides */
-            width: 90%; /* Adjust the width as needed */
+            width: 95%; /* Adjust the width as needed */
             margin-top: 20px;
+            height: 750px; /* Set the height for the container */
         }
         
         /* Table Styling */
         #geojson-table-container {
-            width: 28%; /* Adjust the width percentage for the table and legend */
+            width: 35%; /* Adjust the width percentage for the table and legend */
+            display: flex;
+            flex-direction: column; /* Stack legend, proximity, and table vertically */
+            height: 100%; /* Ensure the container takes up the full height */
         }
         
         table {
@@ -144,14 +149,14 @@
             background-color: #f2f2f2;
         }
         .legend-container {
-            margin-bottom: 20px;
-            font-size: 1rem;
+            margin-bottom: 5px; /* Reduce the space below the legend */
+            font-size: 1rem; /* Make the font size smaller */
+            height: auto; /* Allow the legend to take up less space */
         }
         
         .legend-container h3 {
-            font-size: 1.2rem;
             font-weight: bold;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
         }
         
         .legend-container ul {
@@ -162,7 +167,7 @@
         .legend-container li {
             display: flex;
             align-items: center;
-            margin-bottom: 8px;
+            margin-bottom: 2px;
         }
         
         .legend-color {
@@ -172,22 +177,54 @@
             margin-right: 10px;
         }
         #geojson-table {
-            margin-top: 20px;
-            width: 100%; /* Ensure the table takes up the full width of the container */
-            height: 550px; /* Set a fixed height for the table */
+            flex-grow: 1; /* Allow the table to fill the remaining space */
+            margin-top: 5px;
             overflow-y: auto; /* Enable vertical scrolling if content overflows */
             display: block; /* Makes the table a block element to allow scrolling */
+            max-height: 400px; /* Set a specific height for the table container */
         }
+        
         #geojson-table table {
             width: 100%; /* Ensure the table takes up full width of container */
             border-collapse: collapse; /* Collapse borders */
         }
+        
         #geojson-table table th,
         #geojson-table table td {
             border: 1px solid #ddd;
             padding: 8px;
             text-align: left;
         }
+        
+        #geojson-table thead {
+            position: sticky;
+            top: 0;
+            background-color: #fff;
+            z-index: 10;
+        }
+        #proximity-results-container {
+            flex: 0 1 auto; /* Allow this section to grow and shrink based on content */
+            margin-bottom: 5px; /* Add space below */
+            margin-top: 5px; /* Add space below */
+            height: auto; /* Ensure the section grows with its content */
+            min-height: 40px; /* Ensure this section has at least a small height */
+            overflow-y: auto; /* Enable vertical scrolling if content overflows */
+        }
         #downloadButton {
-            margin-top: 20px; /* Add some space between the table and the button */
+            margin-top: 5px; /* Add some space between the table and the button */
+        }
+        .leaflet-control-layers-toggle {
+            display: flex !important;          /* Use flexbox for layout */
+            flex-direction: column !important; /* Stack icon and text vertically */
+            align-items: center !important;    /* Center items horizontally */
+            width: 100px !important;            /* Set width for the button */
+        }
+        
+        /* Add the text below the icon */
+        .leaflet-control-layers-toggle::after {
+            content: "Kaartlagen" !important;  /* Add the text below the icon */
+            font-size: 14px !important;          /* Set font size */
+            align-items: center !important;
+            color: black;
+            white-space: nowrap !important;      /* Prevent text wrapping */
         }
