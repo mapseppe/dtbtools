@@ -190,21 +190,17 @@ def checkShpDiff(uitsnedeFolder, mutatieFolder):
     def load_shapefile(folder, filename):
         filepath = os.path.join(folder, filename)
         if os.path.exists(filepath):
-            return gpd.read_file(filepath)
+            gdf = gpd.read_file(filepath)
+            gdf.geometry = shapely.set_precision(gdf.geometry, grid_size=0.001)
+            return gdf
         return None
     
     puntU = load_shapefile(uitsnedeFolder, "PUNT.shp")
-    puntU.geometry = shapely.set_precision(puntU.geometry, grid_size=0.001)
     lijnU = load_shapefile(uitsnedeFolder, "LIJN.shp")
-    lijnU.geometry = shapely.set_precision(lijnU.geometry, grid_size=0.001)
     vlakU = load_shapefile(uitsnedeFolder, "VLAK.shp")
-    vlakU.geometry = shapely.set_precision(vlakU.geometry, grid_size=0.001)
     puntM = load_shapefile(mutatieFolder, "PUNT.shp")
-    puntM.geometry = shapely.set_precision(puntM.geometry, grid_size=0.001)
     lijnM = load_shapefile(mutatieFolder, "LIJN.shp")
-    lijnM.geometry = shapely.set_precision(lijnM.geometry, grid_size=0.001)
     vlakM = load_shapefile(mutatieFolder, "VLAK.shp")
-    vlakM.geometry = shapely.set_precision(vlakM.geometry, grid_size=0.001)
 
     puntDifference = gpd.GeoDataFrame()
     lijnDifference = gpd.GeoDataFrame()
