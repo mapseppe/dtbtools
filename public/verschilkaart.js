@@ -29,11 +29,11 @@ function getFeatureStyle(feature) {
     };
     const fillColor = statusColors[feature.properties.STATUS] || 'transparent';
     return {
-        color: fillColor,         // Border color (same as fill color)
-        weight: 3,                // Set the weight of the border (thickness)
+        color: fillColor,
+        weight: 3,
         opacity: 0.5,
-        fillColor: fillColor,     // Fill color based on STATUS
-        fillOpacity: 0.5          // Opacity of the fill color
+        fillColor: fillColor,
+        fillOpacity: 0.5
     };
 }
 
@@ -54,7 +54,7 @@ function pointToLayer(feature, latlng) {
     });
 }
 
-//Stuff for eachfeature
+//Old popup
 function onEachFeature(feature, layer) {
     if (feature.properties && feature.properties.STATUS !== 'Veranderd') {
         var popupContent = "<b>DTB ID:</b> " + feature.properties.DTB_ID + "<br>" +
@@ -64,6 +64,7 @@ function onEachFeature(feature, layer) {
         };
     }
 
+//Change MultiString/Polygon to just String/Polygon, to adapt to leaflet functioning.
 function convertMultiGeometriesToSingle(input) {
     const features = input.features.map(feature => {
         if (feature.geometry && feature.geometry.type) {
@@ -92,10 +93,9 @@ function convertMultiGeometriesToSingle(input) {
                 });
                 return lines;
             } else {
-                return feature;  // No need to modify if it's already a single geometry type
+                return feature;
             }
         } else {
-            // If geometry is null or undefined, skip this feature (or handle as needed)
             console.warn('Feature without valid geometry:', feature);
             return [];
         }
@@ -154,6 +154,7 @@ function loadGeojson(input) {
 	var layerControl = L.control.layers(basmapControl, mapControl).addTo(map);
 }
 
+//Event on clicking
 let lastMarker = null;
 map.on('click', function(event) {
     const latlng = event.latlng;
@@ -170,6 +171,7 @@ map.on('click', function(event) {
     lastMarker = L.marker(latlng, { icon: plusIcon }).addTo(map);
 });
 
+//Style of the click-cursor
 const style = document.createElement('style');
 style.innerHTML = `
     .plus-icon {
@@ -180,6 +182,7 @@ style.innerHTML = `
 `;
 document.head.appendChild(style);
 
+//Check which features are nearby the click
 function checkProximity(latlng, radius) {
     const buffer = turf.buffer(turf.point([latlng.lng, latlng.lat]), radius, { units: 'meters' });
     let intersectingFeatures = [];
@@ -192,6 +195,7 @@ function checkProximity(latlng, radius) {
     showResults(intersectingFeatures);
 }
 
+//Return the results of nearby features of the clicked location in table-form
 function showResults(features) {
     const tableContainer = document.getElementById('proximity-results-container');
     let html = '<table><tr><th>DTB ID</th><th>Object (oud)</th><th>Object (nieuw)</th><th>Status</th></tr>';
@@ -201,6 +205,7 @@ function showResults(features) {
         return feature.properties.STATUS !== 'Veranderd';
     });
 
+    // If no feature is nearby at all, return text below
     if (filteredFeatures.length === 0) {
         html += '<tr><td colspan="4">No features found with the selected status.</td></tr>';
     } else {

@@ -1,11 +1,9 @@
-        /* Reset some basic elements */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
         
-        /* Body Styling */
         body {
             background-color: white;
             font-family: Verdana, Geneva, sans-serif;
@@ -17,7 +15,6 @@
             min-height: 100vh;
         }
         
-        /* Top Bar Styling */
         .top-bar {
             width: 100%;
             font-family: 'Trebuchet MS', Tahoma, sans-serif;
@@ -25,10 +22,9 @@
             padding: 10px 0;
             display: flex;
             align-items: center;
-            padding-left: 20px; /* Padding for space on the left */
+            padding-left: 20px;
         }
         
-        /* Home button styling */
         .home-button {
             text-decoration: none;
             color: black;
@@ -37,20 +33,18 @@
             padding: 10px 20px;
             border-radius: 5px;
             transition: background-color 0.3s ease, color 0.3s ease;
-            margin-right: 30px; /* Adds space between Home button and first link */
+            margin-right: 30px;
         }
         
-        /* Hover effect for the Home button */
         .home-button:hover {
             background-color: #ffd700;
             color: black;
             text-decoration: underline;
         }
         
-        /* Navigation Links Container */
         .nav-links {
             display: flex;
-            gap: 20px; /* Space between links */
+            gap: 20px;
             font-weight: bold;
         }
         
@@ -64,22 +58,19 @@
             transition: background-color 0.3s ease, color 0.3s ease;
         }
         
-        /* Hover effect for navigation items */
         .nav-item:hover {
-            background-color: #ffd700; /* Slightly darker yellow */
+            background-color: #ffd700;
             color: black;
             text-decoration: underline;
         }
         
-        /* Container for the title */
         .container {
-            margin-top: 10px; /* Space below the fixed top bar */
+            margin-top: 10px;
             width: 90%;
             text-align: left;
             line-height: 30px;
         }
         
-        /* Title styling */
         .title {
             font-size: 3rem;
             margin-bottom: 50px;
@@ -104,13 +95,12 @@
         }
         
         #map {
-            height: 100%; /* Ensure the map takes up the full height */
-            width: 65%; /* Adjust the width percentage of the map */
-            margin-right: 20px; /* Add margin to the right of the map */
+            height: 100%;
+            width: 65%;
+            margin-right: 20px;
             z-index: 1;
         }
 
-        /* Container for the title */
         .container2 {
             width: 100%;
             text-align: left;
@@ -120,18 +110,17 @@
         }
         .map-and-table-container {
             display: flex;
-            justify-content: space-between; /* Ensure map and table are on opposite sides */
-            width: 95%; /* Adjust the width as needed */
+            justify-content: space-between;
+            width: 95%;
             margin-top: 20px;
-            height: 750px; /* Set the height for the container */
+            height: 750px;
         }
         
-        /* Table Styling */
         #geojson-table-container {
-            width: 35%; /* Adjust the width percentage for the table and legend */
+            width: 35%;
             display: flex;
-            flex-direction: column; /* Stack legend, proximity, and table vertically */
-            height: 100%; /* Ensure the container takes up the full height */
+            flex-direction: column;
+            height: 100%;
         }
         
         table {
@@ -149,9 +138,9 @@
             background-color: #f2f2f2;
         }
         .legend-container {
-            margin-bottom: 5px; /* Reduce the space below the legend */
-            font-size: 1rem; /* Make the font size smaller */
-            height: auto; /* Allow the legend to take up less space */
+            margin-bottom: 5px;
+            font-size: 1rem;
+            height: auto;
         }
         
         .legend-container h3 {
@@ -177,16 +166,16 @@
             margin-right: 10px;
         }
         #geojson-table {
-            flex-grow: 1; /* Allow the table to fill the remaining space */
+            flex-grow: 1;
             margin-top: 5px;
-            overflow-y: auto; /* Enable vertical scrolling if content overflows */
-            display: block; /* Makes the table a block element to allow scrolling */
-            max-height: 400px; /* Set a specific height for the table container */
+            overflow-y: auto;
+            display: block;
+            max-height: 400px;
         }
         
         #geojson-table table {
-            width: 100%; /* Ensure the table takes up full width of container */
-            border-collapse: collapse; /* Collapse borders */
+            width: 100%;
+            border-collapse: collapse;
         }
         
         #geojson-table table th,
@@ -203,28 +192,27 @@
             z-index: 10;
         }
         #proximity-results-container {
-            flex: 0 1 auto; /* Allow this section to grow and shrink based on content */
-            margin-bottom: 5px; /* Add space below */
-            margin-top: 5px; /* Add space below */
-            height: auto; /* Ensure the section grows with its content */
-            min-height: 40px; /* Ensure this section has at least a small height */
-            overflow-y: auto; /* Enable vertical scrolling if content overflows */
+            flex: 0 1 auto;
+            margin-bottom: 5px;
+            margin-top: 5px;
+            height: auto;
+            min-height: 40px;
+            overflow-y: auto;
         }
         #downloadButton {
-            margin-top: 5px; /* Add some space between the table and the button */
+            margin-top: 5px;
         }
         .leaflet-control-layers-toggle {
-            display: flex !important;          /* Use flexbox for layout */
-            flex-direction: column !important; /* Stack icon and text vertically */
-            align-items: center !important;    /* Center items horizontally */
-            width: 100px !important;            /* Set width for the button */
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            width: 100px !important;
         }
         
-        /* Add the text below the icon */
         .leaflet-control-layers-toggle::after {
-            content: "Kaartlagen" !important;  /* Add the text below the icon */
-            font-size: 14px !important;          /* Set font size */
+            content: "Kaartlagen" !important;
+            font-size: 14px !important;
             align-items: center !important;
             color: black;
-            white-space: nowrap !important;      /* Prevent text wrapping */
+            white-space: nowrap !important;
         }

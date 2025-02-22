@@ -26,6 +26,7 @@ router.get('/dtbverschilkaart?:id', (req, res) => {
             res.status(500).json({ error: "Error parsing GeoJSON file" });
         }
     })
+    
     //Reset
     } else { res.render('dtbverschilkaart', { resultMessage: "", resultGeojson: ""}); }
 });
@@ -53,6 +54,7 @@ const uploadFields = upload.fields([
 //      Create new geojson file       //
 ////////////////////////////////////////
 router.post('/dtbverschilkaart/create', uploadFields, (req, res) => {
+    
     // Rename to randomly generated number
     const oldNameUitsnede = 'data/temp/uitsnede.zip';
     const oldNameMutatie = 'data/temp/mutatie.zip';
@@ -91,7 +93,7 @@ router.post('/dtbverschilkaart/create', uploadFields, (req, res) => {
         console.error('Python error:', data.toString());
     });
 
-    // Response python output
+    // Respond with the python output
     var resultLink = `${req.protocol}://${req.get('host')}/dtbverschilkaart?geojsonId=${randomNumber}`;
     process.on('close', (code) => {
         res.render('createkaart', { resultMessage: pyresults, resultLink: resultLink});

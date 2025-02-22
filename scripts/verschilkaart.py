@@ -13,6 +13,7 @@ job_id = sys.argv[1]
 scriptDirectory = os.path.dirname(os.path.abspath(__file__))
 basePath = os.path.abspath(os.path.join(scriptDirectory, '..'))
 
+#Prepare unpackage and rename uploaded zipfiles for script
 def prepareInputdata(basePath, job_id):
     uitsnedePathZip = os.path.join(basePath, 'data', 'temp', str(job_id)) + '_u.zip'
     mutatiePathZip = os.path.join(basePath, 'data', 'temp', str(job_id)) + '_m.zip'
@@ -37,6 +38,7 @@ def prepareInputdata(basePath, job_id):
         zip_ref.extractall(mutatieUnzipPath)
     checkInput(uitsnedeUnzipPath, mutatieUnzipPath)
 
+#Check if gdb or shapefile is uploaded (or both)
 def checkInput(uitsnedePath, mutatiePath):
     gdbcheckU = glob.glob(os.path.join(uitsnedePath, "*.gdb"))
     gdbcheckM = glob.glob(os.path.join(mutatiePath, "*.gdb"))
@@ -44,6 +46,7 @@ def checkInput(uitsnedePath, mutatiePath):
     shpcheckM = glob.glob(os.path.join(mutatiePath, "*.shp"))
     gdbCondition = False
     shpCondition = False
+    
     #Check if each folder has 1 .gdb file
     if len(gdbcheckU) == 1 and len(gdbcheckM) == 1:
         gdbCondition = True
@@ -58,6 +61,7 @@ def checkInput(uitsnedePath, mutatiePath):
         print("(Error) Uploads bevatten niet beide exact 1 .gdb folder OF minimaal 1 .shp file")
         deleteUploads(basePath)
 
+#Check for different layers between the uploaded .gdbs
 def listGdbfiles(uitsnedePath, mutatiePath):
     layersUitsnede = fiona.listlayers(uitsnedePath)
     layersMutatie = fiona.listlayers(mutatiePath)
@@ -68,7 +72,8 @@ def listGdbfiles(uitsnedePath, mutatiePath):
         deleteUploads(basePath)
     else:
         checkGdbDiff(uitsnedePath, layersUitsnede, mutatiePath, layersMutatie)
-    
+
+#Create difference geojson map for .gdb uploads
 def checkGdbDiff(uitsnedePath, layersUitsnede, mutatiePath, layersMutatie):
     outputDf = pd.DataFrame({
                     'DTB_ID': pd.Series(dtype='str'),
@@ -97,6 +102,7 @@ def checkGdbDiff(uitsnedePath, layersUitsnede, mutatiePath, layersMutatie):
         layerChangeNewF = gpd.GeoDataFrame(columns=layerMutatie.columns)
         layerChangeOldF = gpd.GeoDataFrame(columns=layerMutatie.columns)
         layerChange = gpd.GeoDataFrame(columns=layerMutatie.columns)
+        
         #Check new features
         layerNew = layerMutatie[~layerMutatie['DTB_ID'].isin(layerUitsnede['DTB_ID'])].copy()
         if not layerNew.empty:
@@ -125,6 +131,8 @@ def checkGdbDiff(uitsnedePath, layersUitsnede, mutatiePath, layersMutatie):
             layerCompare.loc[:, 'TYPE_o'] = layerCompare['TYPE_u']
             layerChange = layerCompare.copy()
             layerChange.loc[:, 'STATUS'] = 'Veranderd'
+            
+            #Check partial difference lines/polygons
             layerChangeNew = layerCompare.copy()
             layerChangeOld = layerCompare.copy()
             layerChangeNew['geometry'] = layerChangeNew.apply(lambda row: row['geometry'].difference(row['geometry_u']), axis=1)
@@ -143,7 +151,7 @@ def checkGdbDiff(uitsnedePath, layersUitsnede, mutatiePath, layersMutatie):
             layerDifference = layerDifference[common_columns].copy()
             outputGdf = gpd.GeoDataFrame(pd.concat([layerDifference, outputGdf], ignore_index=True))
     
-    #Output it
+    #Combine all difference-geodataframes and use lookuptable to add TYPE field and save to geojson
     lookupTableFile = os.path.join(scriptDirectory, 'object_conversion.csv')
     lookupTable = pd.read_csv(lookupTableFile, delimiter=',')
     lookupTable_unique = lookupTable.drop_duplicates(subset='TYPE_CODE')
@@ -165,6 +173,7 @@ def checkGdbDiff(uitsnedePath, layersUitsnede, mutatiePath, layersMutatie):
     print("Verschilkaart maken succesvol afgerond met ID: " + str(job_id))
     deleteUploads(basePath)
 
+#Check if uploads contains the same shapefiles
 def listShapefiles(uitsnedeFolder, mutatieFolder):
     shapesUitsnede = []
     shapesMutatie = []
@@ -185,7 +194,9 @@ def listShapefiles(uitsnedeFolder, mutatieFolder):
     else:
         checkShpDiff(uitsnedeFolder, mutatieFolder)
 
+#Create difference geojson for shapefile uploads
 def checkShpDiff(uitsnedeFolder, mutatieFolder):
+    
     #Only load shapefile if it exists
     def load_shapefile(folder, filename):
         filepath = os.path.join(folder, filename)
@@ -209,16 +220,20 @@ def checkShpDiff(uitsnedeFolder, mutatieFolder):
     #New geodataframes for points
     if puntU is not None and puntM is not None:
         puntM['CTE_oud'] = ''
+        
+        #Check new points
         puntNew = puntM[~puntM['DTB_ID'].isin(puntU['DTB_ID'])].copy()
         if not puntNew.empty:
             puntNew.loc[:, 'STATUS'] = 'Nieuw'
         
+        #Check deleted points
         puntDel = puntU[~puntU['DTB_ID'].isin(puntM['DTB_ID'])].copy()
         if not puntDel.empty:
             puntDel.loc[:, 'STATUS'] = 'Verwijderd'
             puntDel.loc[:, 'CTE_oud'] = puntDel['CTE']
             puntDel.loc[:, 'CTE'] = ''
         
+        #Check changed points
         puntMerge = puntM.merge(puntU, on='DTB_ID', how='inner', suffixes=('', '_u'))
         puntCompare = puntMerge[puntMerge['geometry_u'] != puntMerge['geometry']]
         if not puntCompare.empty:
@@ -251,22 +266,27 @@ def checkShpDiff(uitsnedeFolder, mutatieFolder):
         lijnChangeOldF = gpd.GeoDataFrame(columns=lijnM.columns)
         lijnChange = gpd.GeoDataFrame(columns=lijnM.columns)
         lijnM['CTE_oud'] = ''
+        
+        #Check new lines
         lijnNew = lijnM[~lijnM['DTB_ID'].isin(lijnU['DTB_ID'])].copy()
         if not lijnNew.empty:
             lijnNew.loc[:, 'STATUS'] = 'Nieuw'
-
+            
+        #Check deleted lines
         lijnDel = lijnU[~lijnU['DTB_ID'].isin(lijnM['DTB_ID'])].copy()
         if not lijnDel.empty:
             lijnDel.loc[:, 'STATUS'] = 'Verwijderd'
             lijnDel.loc[:, 'CTE_oud'] = lijnDel['CTE']
             lijnDel.loc[:, 'CTE'] = ''
         
+        #Check changed lines
         lijnMerge = lijnM.merge(lijnU, on='DTB_ID', how='inner', suffixes=('', '_u'))
         lijnCompare = lijnMerge[lijnMerge['geometry_u'] != lijnMerge['geometry']]
         if not lijnCompare.empty:
             lijnCompare.loc[:, 'CTE_oud'] = lijnCompare['CTE_u']
             lijnChange = lijnCompare[lijnM.columns].copy()
             lijnChange.loc[:, 'STATUS'] = 'Veranderd'
+            #Check parts of change lines
             lijnChangeNew = lijnCompare.copy()
             lijnChangeOld = lijnCompare.copy()
             lijnChangeNew['geometry'] = lijnCompare.apply(lambda row: row['geometry'].difference(row['geometry_u']), axis=1)
@@ -290,22 +310,26 @@ def checkShpDiff(uitsnedeFolder, mutatieFolder):
         vlakM['CTE_oud'] = ''
         vlakU['area'] = vlakU.geometry.area
         vlakM['area'] = vlakM.geometry.area
+        #Check new polygons
         vlakNew = vlakM[~vlakM['DTB_ID'].isin(vlakU['DTB_ID'])].copy()
         if not vlakNew.empty:
             vlakNew.loc[:, 'STATUS'] = 'Nieuw'
         
+        #Check deleted polygons
         vlakDel = vlakU[~vlakU['DTB_ID'].isin(vlakM['DTB_ID'])].copy()
         if not vlakDel.empty:
             vlakDel.loc[:, 'STATUS'] = 'Verwijderd'
             vlakDel.loc[:, 'CTE_oud'] = vlakDel['CTE']
             vlakDel.loc[:, 'CTE'] = ''
         
+        #Check changed polygons
         vlakMerge = vlakM.merge(vlakU, on='DTB_ID', how='inner', suffixes=('', '_u'))
         vlakCompare = vlakMerge[vlakMerge['area_u'] != vlakMerge['area']]
         if not vlakCompare.empty:
             vlakCompare['CTE_oud'] = vlakCompare['CTE_u']
             vlakChange = vlakCompare[vlakM.columns].copy()
             vlakChange.loc[:, 'STATUS'] = 'Veranderd'
+            #Change parts of changed polygons
             vlakChangeNew = vlakCompare.copy()
             vlakChangeOld = vlakCompare.copy()
             vlakChangeNew['geometry'] = vlakCompare.apply(lambda row: row['geometry'].difference(row['geometry_u']), axis=1)
@@ -319,7 +343,7 @@ def checkShpDiff(uitsnedeFolder, mutatieFolder):
             
         vlakDifference = gpd.GeoDataFrame(pd.concat([vlakNew, vlakDel, vlakChange, vlakChangeNewF, vlakChangeOldF], ignore_index=True))
 
-    #Samenvoegen eindresultaat en exported naar geojson
+    #Combine all difference-geodataframes and use lookuptable to add TYPE field and save to geojson
     combinedDifference = gpd.GeoDataFrame(pd.concat([puntDifference, lijnDifference, vlakDifference], ignore_index=True))
     lookupTableFile = os.path.join(scriptDirectory, 'object_conversion.csv')
     lookupTable = pd.read_csv(lookupTableFile, delimiter=',')
@@ -342,6 +366,7 @@ def checkShpDiff(uitsnedeFolder, mutatieFolder):
     print("Verschilkaart maken succesvol afgerond met ID: " + str(job_id))
     deleteUploads(basePath)
 
+#Delete all uploaded files
 def deleteUploads(basePath):
     tempPath = os.path.join(basePath, 'data', 'temp')
     if os.path.exists(tempPath):

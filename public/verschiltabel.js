@@ -1,6 +1,6 @@
 function generateGeojsonTable(geojson) {
     const tableContainer = document.getElementById("geojson-table");
-    tableContainer.innerHTML = ""; // Clear existing table if any
+    tableContainer.innerHTML = "";
 
     if (!geojson || !geojson.features || geojson.features.length === 0) {
         tableContainer.innerHTML = "<p>No features available</p>";
@@ -17,7 +17,7 @@ function generateGeojsonTable(geojson) {
     const thead = document.createElement("thead");
     const tbody = document.createElement("tbody");
 
-    // Create the table headers
+    // Table headers
     const headerRow = document.createElement("tr");
     fieldsToDisplay.forEach(field => {
         const th = document.createElement("th");
@@ -33,7 +33,7 @@ function generateGeojsonTable(geojson) {
             const row = document.createElement("tr");
             fieldsToDisplay.forEach(field => {
                 const td = document.createElement("td");
-                td.textContent = feature.properties[field] || "N/A"; // Show "N/A" if the property is missing
+                td.textContent = feature.properties[field] || "-";
                 row.appendChild(td);
             });
             tbody.appendChild(row);
