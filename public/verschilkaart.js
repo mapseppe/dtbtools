@@ -185,8 +185,11 @@ document.head.appendChild(style);
 //Check which features are nearby the click
 function checkProximity(latlng, radius) {
     const buffer = turf.buffer(turf.point([latlng.lng, latlng.lat]), radius, { units: 'meters' });
+    const validFeatures = inputGeojson.features.filter(feature => 
+        feature.geometry && feature.geometry.type
+    );
     let intersectingFeatures = [];
-    inputGeojson.features.forEach(function(feature) {
+    validFeatures.forEach(feature => {
         let featureGeometry = feature.geometry;
         if (turf.booleanIntersects(featureGeometry, buffer)) {
             intersectingFeatures.push(feature);

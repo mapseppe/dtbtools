@@ -7,6 +7,7 @@ import zipfile
 import shutil
 import fiona
 import shapely
+from shapely import force_2d
 
 job_id = sys.argv[1]
 
@@ -92,8 +93,8 @@ def checkGdbDiff(uitsnedePath, layersUitsnede, mutatiePath, layersMutatie):
     for dtbLayer in layersUitsnede:
         layerUitsnede = gpd.read_file(uitsnedePath, layer=dtbLayer)
         layerMutatie = gpd.read_file(mutatiePath, layer=dtbLayer)
-        layerUitsnede.geometry = shapely.set_precision(layerUitsnede.geometry, grid_size=0.001)
-        layerMutatie.geometry = shapely.set_precision(layerMutatie.geometry, grid_size=0.001)
+        layerUitsnede.geometry = shapely.set_precision(layerUitsnede.geometry, grid_size=0.0001)
+        layerMutatie.geometry = shapely.set_precision(layerMutatie.geometry, grid_size=0.0001)
         layerMutatie['STATUS'] = ''
         layerUitsnede['STATUS'] = ''
         layerMutatie['TYPE_o'] = ''
@@ -152,6 +153,8 @@ def checkGdbDiff(uitsnedePath, layersUitsnede, mutatiePath, layersMutatie):
             outputGdf = gpd.GeoDataFrame(pd.concat([layerDifference, outputGdf], ignore_index=True))
     
     #Combine all difference-geodataframes and use lookuptable to add TYPE field and save to geojson
+    outputGdf["geometry"] = outputGdf.geometry.apply(force_2d)
+    
     lookupTableFile = os.path.join(scriptDirectory, 'object_conversion.csv')
     lookupTable = pd.read_csv(lookupTableFile, delimiter=',')
     lookupTable_unique = lookupTable.drop_duplicates(subset='TYPE_CODE')
@@ -202,7 +205,7 @@ def checkShpDiff(uitsnedeFolder, mutatieFolder):
         filepath = os.path.join(folder, filename)
         if os.path.exists(filepath):
             gdf = gpd.read_file(filepath)
-            gdf.geometry = shapely.set_precision(gdf.geometry, grid_size=0.001)
+            gdf.geometry = shapely.set_precision(gdf.geometry, grid_size=0.0001)
             return gdf
         return None
     
@@ -342,9 +345,10 @@ def checkShpDiff(uitsnedeFolder, mutatieFolder):
             vlakChangeOldF.loc[:, 'STATUS'] = 'Veranderd Oud'
             
         vlakDifference = gpd.GeoDataFrame(pd.concat([vlakNew, vlakDel, vlakChange, vlakChangeNewF, vlakChangeOldF], ignore_index=True))
-
+        
     #Combine all difference-geodataframes and use lookuptable to add TYPE field and save to geojson
     combinedDifference = gpd.GeoDataFrame(pd.concat([puntDifference, lijnDifference, vlakDifference], ignore_index=True))
+    combinedDifference["geometry"] = combinedDifference.geometry.apply(force_2d)
     lookupTableFile = os.path.join(scriptDirectory, 'object_conversion.csv')
     lookupTable = pd.read_csv(lookupTableFile, delimiter=',')
     lookupTable_unique = lookupTable.drop_duplicates(subset='CTE_CODE')
