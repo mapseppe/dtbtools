@@ -8,12 +8,12 @@
         <%- include('./partials/header.ejs') %>
     
         <div class="container">
-            <a href="/dtbverschilkaart" style="color:rgb(51, 79, 190)">Bestaande verschilkaart bekijken</a>
+            <button type="submit" class="buttonstyle"><a href="/dtbverschilkaart">Bestaande verschilkaart bekijken</a></button>
             <form method="post" action="create" enctype="multipart/form-data">
-                <label>Upload Uitsnede</label>
+                <label>Upload Uitsnede:</label>
                 <input type="file" id="uitsnede" name="uitsnede" class="buttonstyle">
                 <br>
-                <label>Upload Mutatie</label>
+                <label>Upload Mutatie:</label>
                 <input type="file" id="mutatie" name="mutatie" class="buttonstyle">
                 <br>
                 <button type="submit" class="buttonstyle">Verschilkaart generen</button>
@@ -23,9 +23,6 @@
             <% if(resultLink != "") { %>
             <a href=<%= resultLink %> style="color:rgb(51, 79, 190)">Klik hier om de verschilkaart te bekijken</a>
             <% } %>
-        </div>
-        <div class="container">
-            <img src="/folderstructuur_uitleg.png" alt="Folderstructuur" style="width:500px;height:400px;">
         </div>
     </body>
     <script>

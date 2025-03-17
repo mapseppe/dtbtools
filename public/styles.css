@@ -18,7 +18,7 @@
         .top-bar {
             width: 100%;
             font-family: 'Trebuchet MS', Tahoma, sans-serif;
-            background-color: yellow;
+            background-color: rgb(255, 230, 86);
             padding: 10px 0;
             display: flex;
             align-items: center;
@@ -78,16 +78,24 @@
         
         .buttonstyle {
             font-family: Verdana, Geneva, sans-serif;
-            padding: 2px 2px;
+            padding: 6px 6px;
+            background-color: rgb(248, 250, 162);
+            font-size: 1.0rem;
+            border: 2px solid lightgrey;
+            border-radius: 12px;
+            color: black;
+            margin-top: 4px;
+            margin-bottom: 0px;
+            cursor: pointer;
         }
         
+        .buttonstyle:hover {
+            background-color: rgb(255, 230, 86);
+        }
+
         a {
           text-decoration: none;
           color: black;
-        }
-        
-        a:hover {
-          text-decoration: underline;
         }
         
         input {

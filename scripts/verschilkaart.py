@@ -41,25 +41,28 @@ def prepareInputdata(basePath, job_id):
 
 #Check if gdb or shapefile is uploaded (or both)
 def checkInput(uitsnedePath, mutatiePath):
-    gdbcheckU = glob.glob(os.path.join(uitsnedePath, "*.gdb"))
-    gdbcheckM = glob.glob(os.path.join(mutatiePath, "*.gdb"))
-    shpcheckU = glob.glob(os.path.join(uitsnedePath, "*.shp"))
-    shpcheckM = glob.glob(os.path.join(mutatiePath, "*.shp"))
+    gdbcheckU = glob.glob(os.path.join(uitsnedePath, "**", "*.gdb"), recursive=True)
+    gdbcheckM = glob.glob(os.path.join(mutatiePath, "**", "*.gdb"), recursive=True)
+    shpcheckU = glob.glob(os.path.join(uitsnedePath, "**", "*.shp"), recursive=True)
+    shpcheckM = glob.glob(os.path.join(mutatiePath, "**", "*.shp"), recursive=True)
     gdbCondition = False
     shpCondition = False
     
     #Check if each folder has 1 .gdb file
-    if len(gdbcheckU) == 1 and len(gdbcheckM) == 1:
+    if len(gdbcheckM) == 1:
         gdbCondition = True
         gdbPathUitsnede = gdbcheckU[0]
         gdbPathMutatie = gdbcheckM[0]
         listGdbfiles(gdbPathUitsnede, gdbPathMutatie)
     #Check if each folder has 1 or more .shp files
-    if len(shpcheckU) >= 1 and len(shpcheckM) >= 1:
+    if len(shpcheckM) >= 1:
         shpCondition = True
-        listShapefiles(uitsnedePath, mutatiePath)
+        shpPathUitsnede = os.path.dirname(shpcheckU[0])
+        shpPathMutatie = os.path.dirname(shpcheckM[0])                
+        listShapefiles(shpPathUitsnede, shpPathMutatie)
+    #Error if it has multiple or no .gdb/.shp files
     if not gdbCondition and not shpCondition:
-        print("(Error) Uploads bevatten niet beide exact 1 .gdb folder OF minimaal 1 .shp file")
+        print("(Error) Upload bevatten niet exact 1 .gdb folder OF minimaal 1 .shp file")
         deleteUploads(basePath)
 
 #Check for different layers between the uploaded .gdbs
