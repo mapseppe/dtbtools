@@ -9,10 +9,23 @@ import fiona
 import shapely
 from shapely import force_2d
 
+#Read job id from api python call
 job_id = sys.argv[1]
 
+#Setup the main paths
 scriptDirectory = os.path.dirname(os.path.abspath(__file__))
 basePath = os.path.abspath(os.path.join(scriptDirectory, '..'))
+
+#Constants for objects/layers that are or aren't part of the Vlakkennet, depending on whether one uses .gdb or .shp
+vlakkenNet = {"DTB_BEBOUWING_VLAKKEN", "DTB_BEKLEDING_VLAKKEN", "DTB_GROND_VLAKKEN", "DTB_INSTALLATIE_VLAKKEN", "DTB_TERREIN_VLAKKEN", "DTB_VERHARDING_VLAKKEN", "DTB_WATER_VLAKKEN"}
+nietVlakkennetCTE = {"R030303", "MD42", "R17", "MD33", "MD63",
+                     "F01", "F07", "F7101", "R39", "R57", "R81", "F57", "R81", "F67", "F71", "R88", "R210101", "R210103",
+                     "R910307", "R910517", "R910519", "R910305",
+                     "B0503", "Q01", "Q19", "Q23", "R59", "MD34"}
+#CTE codes WegVlakken: "R030303", "MD42", "R17", "MD33", "MD63"
+#CTE codes KunstwerkVlakken: "F01", "F07", "F7101", "R39", "R57", "R81", "F57", "R81", "F67", "F71", "R88", "R210101", "R210103"
+#CTE codes MarkeringVlakken: "R910307", "R910517", "R910519", "R910305"
+#CTE codes OverigeVlakken: "B0503", "Q01", "Q19", "Q23", "R59", "MD34"
 
 #Prepare unpackage and rename uploaded zipfiles for script
 def prepareInputdata(basePath, job_id):
@@ -89,6 +102,8 @@ def checkGdbDiff(uitsnedePath, layersUitsnede, mutatiePath, layersMutatie):
                     'TYPE_o': pd.Series(dtype='str'),
                     })
     outputGdf = gpd.GeoDataFrame(outputDf, crs="EPSG:28992")
+    vlakkennetUitsnede = outputGdf.copy()
+    vlakkennetMutatie = outputGdf.copy()
     layersMutatie = [layer for layer in layersMutatie if 'DTB_' in layer]
     layersUitsnede = [layer for layer in layersUitsnede if 'DTB_' in layer]
     
@@ -106,58 +121,82 @@ def checkGdbDiff(uitsnedePath, layersUitsnede, mutatiePath, layersMutatie):
         layerChangeNewF = gpd.GeoDataFrame(columns=layerMutatie.columns)
         layerChangeOldF = gpd.GeoDataFrame(columns=layerMutatie.columns)
         layerChange = gpd.GeoDataFrame(columns=layerMutatie.columns)
+        layerVlakChange = gpd.GeoDataFrame(columns=layerMutatie.columns)
+        layerNew = gpd.GeoDataFrame(columns=layerMutatie.columns)
+        layerDel = gpd.GeoDataFrame(columns=layerMutatie.columns)
         
-        #Check new features
-        layerNew = layerMutatie[~layerMutatie['DTB_ID'].isin(layerUitsnede['DTB_ID'])].copy()
-        if not layerNew.empty:
-            layerNew.loc[:, 'STATUS'] = 'Nieuw'
+        #Special change-detection-logic for dtblayers that are part of the vlakkennet
+        if dtbLayer not in vlakkenNet:
+            #Check new features
+            layerNew = layerMutatie[~layerMutatie['DTB_ID'].isin(layerUitsnede['DTB_ID'])].copy()
+            if not layerNew.empty:
+                layerNew.loc[:, 'STATUS'] = 'Nieuw'
 
-        #Check deleted features
-        layerDel = layerUitsnede[~layerUitsnede['DTB_ID'].isin(layerMutatie['DTB_ID'])].copy()
-        if not layerDel.empty:
-            layerDel.loc[:, 'STATUS'] = 'Verwijderd'
-            layerDel['TYPE_o'] = layerDel['TYPE']
-            layerDel['TYPE'] = ''
+            #Check deleted features
+            layerDel = layerUitsnede[~layerUitsnede['DTB_ID'].isin(layerMutatie['DTB_ID'])].copy()
+            if not layerDel.empty:
+                layerDel.loc[:, 'STATUS'] = 'Verwijderd'
+                layerDel['TYPE_o'] = layerDel['TYPE']
+                layerDel['TYPE'] = ''
 
-        #Check changed features
-        #Compare area if its a polygon layer
-        if layerMutatie.geom_type.isin(['Polygon']).all():
-            layerMutatie['area'] = layerMutatie.geometry.area
-            layerUitsnede['area'] = layerUitsnede.geometry.area
-            layerMerge = layerMutatie.merge(layerUitsnede, on='DTB_ID', how='inner', suffixes=('', '_u'))
-            layerCompare = layerMerge[layerMerge['area_u'] != layerMerge['area']]
-        #Compare geometry if its a line or point layer
-        else:
-            layerMerge = layerMutatie.merge(layerUitsnede, on='DTB_ID', how='inner', suffixes=('', '_u'))
-            layerCompare = layerMerge[layerMerge['geometry_u'] != layerMerge['geometry']]
-        
-        if not layerCompare.empty:
-            layerCompare.loc[:, 'TYPE_o'] = layerCompare['TYPE_u']
-            layerChange = layerCompare.copy()
-            layerChange.loc[:, 'STATUS'] = 'Veranderd'
+            #Check changed features
+            #Compare area if its a polygon layer
+            if layerMutatie.geom_type.isin(['Polygon']).all():
+                layerMutatie['area'] = layerMutatie.geometry.area
+                layerUitsnede['area'] = layerUitsnede.geometry.area
+                layerMerge = layerMutatie.merge(layerUitsnede, on='DTB_ID', how='inner', suffixes=('', '_u'))
+                layerCompare = layerMerge[layerMerge['area_u'] != layerMerge['area']]
+            #Compare geometry if its a line or point layer
+            else:
+                layerMerge = layerMutatie.merge(layerUitsnede, on='DTB_ID', how='inner', suffixes=('', '_u'))
+                layerCompare = layerMerge[layerMerge['geometry_u'] != layerMerge['geometry']]
             
-            #Check partial difference lines/polygons
-            layerChangeNew = layerCompare.copy()
-            layerChangeOld = layerCompare.copy()
-            layerChangeNew['geometry'] = layerChangeNew.apply(lambda row: row['geometry'].difference(row['geometry_u']), axis=1)
-            layerChangeOld['geometry'] = layerChangeOld.apply(lambda row: row['geometry_u'].difference(row['geometry']), axis=1)
-            layerChangeNewF = layerChangeNew[layerMutatie.columns].copy()
-            layerChangeOldF = layerChangeOld[layerMutatie.columns].copy()
-            layerChangeNewF = layerChangeNewF[~layerChangeNewF['geometry'].is_empty]
-            layerChangeOldF = layerChangeOldF[~layerChangeOldF['geometry'].is_empty]
-            layerChangeNewF.loc[:, 'STATUS'] = 'Veranderd Nieuw'
-            layerChangeOldF.loc[:, 'STATUS'] = 'Veranderd Oud'
+            if not layerCompare.empty:
+                layerCompare.loc[:, 'TYPE_o'] = layerCompare['TYPE_u']
+                layerChange = layerCompare.copy()
+                layerChange.loc[:, 'STATUS'] = 'Veranderd'
+                
+                #Check partial difference lines/polygons
+                layerChangeNew = layerCompare.copy()
+                layerChangeOld = layerCompare.copy()
+                layerChangeNew['geometry'] = layerChangeNew.apply(lambda row: row['geometry'].difference(row['geometry_u']), axis=1)
+                layerChangeOld['geometry'] = layerChangeOld.apply(lambda row: row['geometry_u'].difference(row['geometry']), axis=1)
+                layerChangeNewF = layerChangeNew[layerMutatie.columns].copy()
+                layerChangeOldF = layerChangeOld[layerMutatie.columns].copy()
+                layerChangeNewF = layerChangeNewF[~layerChangeNewF['geometry'].is_empty]
+                layerChangeOldF = layerChangeOldF[~layerChangeOldF['geometry'].is_empty]
+                layerChangeNewF.loc[:, 'STATUS'] = 'Veranderd Nieuw'
+                layerChangeOldF.loc[:, 'STATUS'] = 'Veranderd Oud'
         
+        #Mark and prepare layer are vlakkennet featureclass
+        else:
+            if not layerMutatie.empty:
+                vlakkennetUitsnede = gpd.GeoDataFrame(pd.concat([vlakkennetUitsnede, layerUitsnede], ignore_index=True))
+                vlakkennetMutatie = gpd.GeoDataFrame(pd.concat([vlakkennetMutatie, layerMutatie], ignore_index=True))
+                
         #Process the total changes of layer
-        layerDifference = gpd.GeoDataFrame(pd.concat([layerNew, layerDel, layerChange, layerChangeNewF, layerChangeOldF], ignore_index=True))
+        layerDifference = gpd.GeoDataFrame(pd.concat([layerNew, layerDel, layerChange, layerChangeNewF, layerChangeOldF, layerVlakChange], ignore_index=True))
         if not layerDifference.empty:
             common_columns = [col for col in outputGdf.columns if col in layerDifference.columns]
             layerDifference = layerDifference[common_columns].copy()
             outputGdf = gpd.GeoDataFrame(pd.concat([layerDifference, outputGdf], ignore_index=True))
     
+    #Process the dtbLayers that occur in vlakkennet
+    if not vlakkennetMutatie.empty:
+        layerVlakUnion = gpd.overlay(vlakkennetUitsnede, vlakkennetMutatie, how='union')
+        #We only compare the polygons that are on the same LEVEL(NIVEAU) but have a different TYPE
+        layerVlakChange = layerVlakUnion[(layerVlakUnion["TYPE_1"] != layerVlakUnion["TYPE_2"]) & (layerVlakUnion["NIVEAU_1"] == layerVlakUnion["NIVEAU_2"])]
+        if not layerVlakChange.empty:
+            layerVlakChange["TYPE_o"] = layerVlakChange["TYPE_1"]
+            layerVlakChange["DTB_ID"] = layerVlakChange["DTB_ID_2"]
+            layerVlakChange["TYPE"] = layerVlakChange["TYPE_2"]
+            layerVlakChange["STATUS"] = "Veranderd Nieuw"
+            commoncolumns = [col for col in outputGdf.columns if col in layerVlakChange.columns]
+            layerVlakChange[commoncolumns].copy()
+            outputGdf = gpd.GeoDataFrame(pd.concat([layerVlakChange, outputGdf], ignore_index=True))
+    
     #Combine all difference-geodataframes and use lookuptable to add TYPE field and save to geojson
     outputGdf["geometry"] = outputGdf.geometry.apply(force_2d)
-    
     lookupTableFile = os.path.join(scriptDirectory, 'object_conversion.csv')
     lookupTable = pd.read_csv(lookupTableFile, delimiter=',')
     lookupTable_unique = lookupTable.drop_duplicates(subset='TYPE_CODE')
@@ -292,7 +331,7 @@ def checkShpDiff(uitsnedeFolder, mutatieFolder):
             lijnCompare.loc[:, 'CTE_oud'] = lijnCompare['CTE_u']
             lijnChange = lijnCompare[lijnM.columns].copy()
             lijnChange.loc[:, 'STATUS'] = 'Veranderd'
-            #Check parts of change lines
+            #Check partial changes of changed lines
             lijnChangeNew = lijnCompare.copy()
             lijnChangeOld = lijnCompare.copy()
             lijnChangeNew['geometry'] = lijnCompare.apply(lambda row: row['geometry'].difference(row['geometry_u']), axis=1)
@@ -311,11 +350,19 @@ def checkShpDiff(uitsnedeFolder, mutatieFolder):
         vlakChangeNewF = gpd.GeoDataFrame(columns=vlakM.columns)
         vlakChangeOldF = gpd.GeoDataFrame(columns=vlakM.columns)
         vlakChange = gpd.GeoDataFrame(columns=vlakM.columns)
-        vlakU = vlakU[vlakU['LAYER'] == 1]
-        vlakM = vlakM[vlakM['LAYER'] == 1]
+        vlaknetChange = gpd.GeoDataFrame(columns=vlakM.columns)
         vlakM['CTE_oud'] = ''
         vlakU['area'] = vlakU.geometry.area
         vlakM['area'] = vlakM.geometry.area
+        
+        #Seperate the vlakkennet from the vlakken
+        vlaknetU = vlakU[~vlakU['CTE'].isin(nietVlakkennetCTE)].copy()
+        vlaknetM = vlakM[~vlakM['CTE'].isin(nietVlakkennetCTE)].copy()
+        vlakU = vlakU[vlakU['CTE'].isin(nietVlakkennetCTE)]
+        vlakM = vlakM[vlakM['CTE'].isin(nietVlakkennetCTE)]
+        
+        #Standard procedure for niet-vlakkennet objects
+        
         #Check new polygons
         vlakNew = vlakM[~vlakM['DTB_ID'].isin(vlakU['DTB_ID'])].copy()
         if not vlakNew.empty:
@@ -335,7 +382,7 @@ def checkShpDiff(uitsnedeFolder, mutatieFolder):
             vlakCompare['CTE_oud'] = vlakCompare['CTE_u']
             vlakChange = vlakCompare[vlakM.columns].copy()
             vlakChange.loc[:, 'STATUS'] = 'Veranderd'
-            #Change parts of changed polygons
+            #Change partial changes of changed polygons
             vlakChangeNew = vlakCompare.copy()
             vlakChangeOld = vlakCompare.copy()
             vlakChangeNew['geometry'] = vlakCompare.apply(lambda row: row['geometry'].difference(row['geometry_u']), axis=1)
@@ -346,8 +393,19 @@ def checkShpDiff(uitsnedeFolder, mutatieFolder):
             vlakChangeOldF = vlakChangeOldF[~vlakChangeOldF['geometry'].is_empty]
             vlakChangeNewF.loc[:, 'STATUS'] = 'Veranderd Nieuw'
             vlakChangeOldF.loc[:, 'STATUS'] = 'Veranderd Oud'
+        
+        #Compare the vlakkennet
+        if not vlaknetM.empty:
+            vlaknetUnion = gpd.overlay(vlaknetU, vlaknetM, how='union')
+            vlaknetChange = vlaknetUnion[(vlaknetUnion["CTE_1"] != vlaknetUnion["CTE_2"]) & (vlaknetUnion["LAYER_1"] == vlaknetUnion["LAYER_2"])]
+            if not vlaknetChange.empty:
+                print("vlaknet is aangepast")
+                vlaknetChange["CTE_oud"] = vlaknetChange["CTE_1"]
+                vlaknetChange["DTB_ID"] = vlaknetChange["DTB_ID_2"]
+                vlaknetChange["CTE"] = vlaknetChange["CTE_2"]
+                vlaknetChange.loc[:, 'STATUS'] = 'Veranderd Nieuw'
             
-        vlakDifference = gpd.GeoDataFrame(pd.concat([vlakNew, vlakDel, vlakChange, vlakChangeNewF, vlakChangeOldF], ignore_index=True))
+        vlakDifference = gpd.GeoDataFrame(pd.concat([vlakNew, vlakDel, vlakChange, vlakChangeNewF, vlakChangeOldF, vlaknetChange], ignore_index=True))
         
     #Combine all difference-geodataframes and use lookuptable to add TYPE field and save to geojson
     combinedDifference = gpd.GeoDataFrame(pd.concat([puntDifference, lijnDifference, vlakDifference], ignore_index=True))

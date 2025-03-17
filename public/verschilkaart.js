@@ -19,7 +19,7 @@ var dtbLayer = L.esri.dynamicMapLayer({
     maxZoom: 24
 }).addTo(map);
 
-// Function to style features based on the STATUS attribute
+// Function to style polygon and line features
 function getFeatureStyle(feature) {
     const statusColors = {
         'Nieuw': 'green',
@@ -28,13 +28,23 @@ function getFeatureStyle(feature) {
         'Veranderd Oud': 'grey'
     };
     const fillColor = statusColors[feature.properties.STATUS] || 'transparent';
-    return {
-        color: fillColor,
-        weight: 3,
-        opacity: 0.5,
-        fillColor: fillColor,
-        fillOpacity: 0.5
-    };
+    if (feature.geometry.type === 'Polygon') {
+        return {
+            color: fillColor,
+            weight: 1,
+            opacity: 0.15,
+            fillColor: fillColor,
+            fillOpacity: 0.5
+        };
+    } else if (feature.geometry.type === 'LineString') {
+        return {
+            color: fillColor,
+            weight: 3,
+            opacity: 0.5,
+            fillColor: 'transparent',
+            fillOpacity: 0
+        };
+    }
 }
 
 // Function to style point features
@@ -47,60 +57,48 @@ function pointToLayer(feature, latlng) {
     return L.circleMarker(latlng, {
         radius: 4,
         fillColor: statusColors[feature.properties.STATUS],
-        color: '#000',
+        color: 'transparent',
         weight: 1,
         opacity: 0.5,
         fillOpacity: 0.5
     });
 }
 
-//Old popup
-function onEachFeature(feature, layer) {
-    if (feature.properties && feature.properties.STATUS !== 'Veranderd') {
-        var popupContent = "<b>DTB ID:</b> " + feature.properties.DTB_ID + "<br>" +
-                           "<b>Object (oud):</b> " + feature.properties.TYPE_oud + "<br>" +
-                           "<b>Object (nieuw):</b> " + feature.properties.TYPE_nieuw + "<br>" +
-                           "<b>Status:</b> " + feature.properties.STATUS + "<br>";
-        };
-    }
-
 //Change MultiString/Polygon to just String/Polygon, to adapt to leaflet functioning.
 function convertMultiGeometriesToSingle(input) {
     const features = input.features.map(feature => {
+        //Only do valid geometries
         if (feature.geometry && feature.geometry.type) {
+            //MultiPolygon to Polygon
             if (feature.geometry.type === 'MultiPolygon') {
                 const polygons = feature.geometry.coordinates.map(coords => {
                     return {
                         type: 'Feature',
-                        geometry: {
-                            type: 'Polygon',
-                            coordinates: coords
-                        },
+                        geometry: {type: 'Polygon', coordinates: coords},
                         properties: feature.properties
                     };
                 });
                 return polygons;
+            //MultiLineString to LineString
             } else if (feature.geometry.type === 'MultiLineString') {
                 const lines = feature.geometry.coordinates.map(coords => {
                     return {
                         type: 'Feature',
-                        geometry: {
-                            type: 'LineString',
-                            coordinates: coords
-                        },
+                        geometry: {type: 'LineString', coordinates: coords},
                         properties: feature.properties
                     };
                 });
                 return lines;
+            //Keep other features the same
             } else {
                 return feature;
             }
+        //Report invalid geometries (shouldn't occur anymore, but used to do in earlier version)
         } else {
             console.warn('Feature without valid geometry:', feature);
             return [];
         }
     }).flat();
-
     return {
         type: 'FeatureCollection',
         features: features
@@ -115,19 +113,18 @@ function loadGeojson(input) {
     const lines = geojsonData.features.filter(feature => feature.geometry.type === 'LineString');
     const polygons = geojsonData.features.filter(feature => feature.geometry.type === 'Polygon');
 
+    //Index the layers so that the points are on top, then lines, then polygons below
     const polygonsLayer = L.geoJSON(polygons, {
         style: function(feature) {
             return getFeatureStyle(feature);
         },
         zIndex: 1,
-        onEachFeature: onEachFeature
     })
     const linesLayer = L.geoJSON(lines, {
         style: function(feature) {
             return getFeatureStyle(feature);
         },
         zIndex: 2,
-        onEachFeature: onEachFeature
     })
     const pointsLayer = L.geoJSON(points, {
         style: function(feature) {
@@ -135,7 +132,6 @@ function loadGeojson(input) {
         },
         pointToLayer: pointToLayer,
         zIndex: 3,
-        onEachFeature: onEachFeature
     })
     const verschilkaartLayer = L.layerGroup([pointsLayer, linesLayer, polygonsLayer]);
     verschilkaartLayer.addTo(map);
@@ -158,6 +154,7 @@ function loadGeojson(input) {
 let lastMarker = null;
 map.on('click', function(event) {
     const latlng = event.latlng;
+    //Change the distance of how close the nearby objects should appear
     const proximityRadius = 1;
     if (lastMarker) {
         map.removeLayer(lastMarker);
@@ -200,27 +197,28 @@ function checkProximity(latlng, radius) {
 
 //Return the results of nearby features of the clicked location in table-form
 function showResults(features) {
+    //Table base and link to html
     const tableContainer = document.getElementById('proximity-results-container');
     let html = '<table><tr><th>DTB ID</th><th>Object (oud)</th><th>Object (nieuw)</th><th>Status</th></tr>';
-    
-    // Filter out features where 'Status' is 'Veranderd'
+    //Dont add features with 'Veranderd' to viewing
     const filteredFeatures = features.filter(function(feature) {
         return feature.properties.STATUS !== 'Veranderd';
     });
-
-    // If no feature is nearby at all, return text below
+    //If no features are found near cursor
     if (filteredFeatures.length === 0) {
         html += '<tr><td colspan="4">No features found with the selected status.</td></tr>';
+    //Else list each feature that is found near cursor
     } else {
         filteredFeatures.forEach(function(feature) {
             html += `<tr>
-                        <td>${feature.properties.DTB_ID}</td>
-                        <td>${feature.properties.TYPE_oud}</td>
-                        <td>${feature.properties.TYPE_nieuw}</td>
-                        <td>${feature.properties.STATUS}</td>
+                        <td>${feature.properties.DTB_ID || '-'}</td>
+                        <td>${feature.properties.TYPE_oud || '-'}</td>
+                        <td>${feature.properties.TYPE_nieuw || '-'}</td>
+                        <td>${feature.properties.STATUS || '-'}</td>
                     </tr>`;
         });
     }
+    //Final html-part of table
     html += '</table>';
     tableContainer.innerHTML = html;
 }
