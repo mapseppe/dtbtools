@@ -186,6 +186,9 @@ def checkGdbDiff(uitsnedePath, layersUitsnede, mutatiePath, layersMutatie):
         layerVlakUnion = gpd.overlay(vlakkennetUitsnede, vlakkennetMutatie, how='union')
         #We only compare the polygons that are on the same LEVEL(NIVEAU) but have a different TYPE
         layerVlakChange = layerVlakUnion[(layerVlakUnion["TYPE_1"] != layerVlakUnion["TYPE_2"]) & (layerVlakUnion["NIVEAU_1"] == layerVlakUnion["NIVEAU_2"])]
+        #Remove super tiny sliver polygons
+        layerVlakChange['area'] = layerVlakChange.geometry.area
+        layerVlakChange = layerVlakChange[layerVlakChange['area'] > 0.01]
         if not layerVlakChange.empty:
             layerVlakChange["TYPE_o"] = layerVlakChange["TYPE_1"]
             layerVlakChange["DTB_ID"] = layerVlakChange["DTB_ID_2"]
@@ -193,7 +196,9 @@ def checkGdbDiff(uitsnedePath, layersUitsnede, mutatiePath, layersMutatie):
             layerVlakChange["STATUS"] = "Veranderd Nieuw"
             commoncolumns = [col for col in outputGdf.columns if col in layerVlakChange.columns]
             layerVlakChange[commoncolumns].copy()
-            outputGdf = gpd.GeoDataFrame(pd.concat([layerVlakChange, outputGdf], ignore_index=True))
+            layerChangeExtra = layerVlakChange.copy()
+            layerChangeExtra["STATUS"] = "Veranderd"
+            outputGdf = gpd.GeoDataFrame(pd.concat([layerVlakChange, outputGdf, layerChangeExtra], ignore_index=True))
     
     #Combine all difference-geodataframes and use lookuptable to add TYPE field and save to geojson
     outputGdf["geometry"] = outputGdf.geometry.apply(force_2d)
