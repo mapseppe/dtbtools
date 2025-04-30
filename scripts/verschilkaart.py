@@ -78,6 +78,10 @@ def checkInput(uitsnedePath, mutatiePath):
         print("(Error) Upload bevatten niet exact 1 .gdb folder OF minimaal 1 .shp file")
         deleteUploads(basePath)
 
+#################################
+#  Geodatabase Upload Handling  #
+#################################
+
 #Check for different layers between the uploaded .gdbs
 def listGdbfiles(uitsnedePath, mutatiePath):
     layersUitsnede = fiona.listlayers(uitsnedePath)
@@ -115,8 +119,8 @@ def checkGdbDiff(uitsnedePath, layersUitsnede, mutatiePath, layersMutatie):
         layerMutatie.geometry = shapely.set_precision(layerMutatie.geometry, grid_size=0.0001)
         layerMutatie['STATUS'] = ''
         layerUitsnede['STATUS'] = ''
-        layerMutatie['TYPE_o'] = ''
-        layerUitsnede['TYPE_o'] = ''
+        layerMutatie['TYPE_o'] = pd.NA
+        layerUitsnede['TYPE_o'] = pd.NA
         
         layerChangeNewF = gpd.GeoDataFrame(columns=layerMutatie.columns)
         layerChangeOldF = gpd.GeoDataFrame(columns=layerMutatie.columns)
@@ -137,7 +141,7 @@ def checkGdbDiff(uitsnedePath, layersUitsnede, mutatiePath, layersMutatie):
             if not layerDel.empty:
                 layerDel.loc[:, 'STATUS'] = 'Verwijderd'
                 layerDel['TYPE_o'] = layerDel['TYPE']
-                layerDel['TYPE'] = ''
+                layerDel['TYPE'] = pd.NA
 
             #Check changed features
             #Compare area if its a polygon layer
@@ -202,9 +206,11 @@ def checkGdbDiff(uitsnedePath, layersUitsnede, mutatiePath, layersMutatie):
     
     #Combine all difference-geodataframes and use lookuptable to add TYPE field and save to geojson
     outputGdf["geometry"] = outputGdf.geometry.apply(force_2d)
+    outputGdf['TYPE_o'] = outputGdf['TYPE_o'].astype('Int64')
     lookupTableFile = os.path.join(scriptDirectory, 'object_conversion.csv')
     lookupTable = pd.read_csv(lookupTableFile, delimiter=',')
     lookupTable_unique = lookupTable.drop_duplicates(subset='TYPE_CODE')
+    lookupTable_unique['TYPE_CODE'] = lookupTable_unique['TYPE_CODE'].astype('Int64')
     combinedDifference = outputGdf.merge(
         lookupTable_unique[['TYPE_CODE', 'TYPE_OMSCHRIJVING']], 
         left_on='TYPE_o', 
@@ -222,6 +228,10 @@ def checkGdbDiff(uitsnedePath, layersUitsnede, mutatiePath, layersMutatie):
     totalDifference4326.to_file(outputPath + '.geojson', driver="GeoJSON")
     print("Verschilkaart maken succesvol afgerond met ID: " + str(job_id))
     deleteUploads(basePath)
+
+#################################
+#   Shapefile Upload Handling   #
+#################################
 
 #Check if uploads contains the same shapefiles
 def listShapefiles(uitsnedeFolder, mutatieFolder):
