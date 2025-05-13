@@ -4,45 +4,63 @@
     <%- include('./partials/head.ejs') %>
 
     <body>
-
+        
         <%- include('./partials/header.ejs') %>
 
-        <div class="container">
-            <button type="submit" class="buttonstyle"><a href="/dtbverschilkaart/create">&#x2728; Nieuwe verschilkaart genereren</a></button>
-            <form id="geojsonForm">
-                <label for="geojsonId">Bestaande verschilkaart bekijken op basis van ID</label>
-                <input type="text" id="geojsonId" name="geojsonId" required>
-                <button type="submit" class="buttonstyle">Inladen</button> <span style="color:red;"><%= resultMessage %></span>
-            </form>
-        </div>
-        <div class="map-and-table-container">
-            <div id="map" class="container2"></div>
-            <div id="geojson-table-container" class="container2">
-                <div id="legend" class="legend-container">
-                    <h3>Legenda:</h3>
-                    <ul>
-                        <li><span class="legend-color" style="background-color:green;"></span>Nieuwe objecten</li>
-                        <li><span class="legend-color" style="background-color:red;"></span>Verwijderde objecten</li>
-                        <li><span class="legend-color" style="background-color:blue;"></span>Veranderde nieuwe object(delen)</li>
-                        <li><span class="legend-color" style="background-color:gray;"></span>Veranderde oude object(delen)</li>
-                    </ul>
+        <div class="appcontainer">
+            <div class="topcontainer">
+                <button type="submit" class="buttonstyle"><a href="/dtbverschilkaart/create">&#x2728; Nieuwe verschilkaart genereren</a></button>
+                <form id="geojsonForm">
+                    <label for="geojsonId">Bestaande verschilkaart bekijken op basis van ID</label>
+                    <input type="text" id="geojsonId" name="geojsonId" class="textinput" required>
+                    <button type="submit" style="font-family: Verdana, Geneva, sans-serif">Inladen</button> <span style="color:red;"><%= resultMessage %></span>
+                </form>
+            </div>
+            <div class="map-and-table-container">
+                <div id="map" class="mapcontainer">
                 </div>
-                <span><h3>Aangeklikte Objecten</h3></span>
-                <div id="proximity-results-container"></div>
-                <span><h3>Alle Objecten</h3></span>
-                <div id="geojson-table"></div>
-                <button id="downloadButton" class="buttonstyle">&#8595; Download Verschilkaart (GeoJSON)</button>
+                <div id="geojson-table-container" class="container-side">
+                    <div class="threebuttons">
+                    <button id="googlemapsButton" class="buttonstyle">Open Google Maps Locatie</button>
+                    <button id="downloadButton" class="buttonstyle">&#8595; Download Verschilkaart (GeoJSON)</button>
+                    </div>
+                    <div class="layercontrol">
+                        <div class="layercontroltoggle">
+                            Lagen:
+                            <label><input class="checkboxstyle" type="checkbox" value="dtb" checked> DTB (achtergrond)</label>
+                            <label><input class="status-checkbox" type="checkbox" value="Nieuw" checked>  <span class="legend-color" style="background-color:green;"></span> Nieuw</label>
+                            <label><input class="status-checkbox" type="checkbox" value="Verwijderd" checked>  <span class="legend-color" style="background-color:red;"></span> Verwijderd</label>
+                            <label><input class="status-checkbox" type="checkbox" value="Veranderd Nieuw" checked>  <span class="legend-color" style="background-color:blue;"></span> Veranderd (nieuw)</label>
+                            <label><input class="status-checkbox" type="checkbox" value="Veranderd Oud" checked>  <span class="legend-color" style="background-color:gray;"></span> Veranderd (oud)</label>
+                        </div>
+                        <div class="layercontrolbasemaps">
+                            Basiskaart:
+                            <label><input type="radio" name="basemap" value="osm" class="radio-box" checked> Topo (zwart-wit)</label>
+                            <label><input type="radio" name="basemap" value="topord" class="radio-box"> Topo (kleur)</label>
+                            <label><input type="radio" name="basemap" value="luchtfoto" class="radio-box"> Luchtfoto</label>
+                        </div>
+                    </div>
+                    <span><h3>Aangeklikte Objecten</h3></span>
+                    <div id="proximity-results-container"></div>
+                    <span><h3>Alle Objecten</h3></span>
+                    <div id="geojson-table"></div>
+                    </div>
+                </div>
             </div>
         </div>
         <script src="/verschilkaart.js"></script>
         <script src="/verschiltabel.js"></script>
         <script src="/downloadgeojson.js"></script>
+        <script src="/openmapslocatie.js"></script>
         <script>
             const inputGeojson = <%- JSON.stringify(resultGeojson) %>;
             loadGeojson(inputGeojson);
             generateGeojsonTable(inputGeojson);
             document.getElementById('downloadButton').addEventListener('click', function() {
                 downloadGeojson(inputGeojson);
+            });
+            document.getElementById('googlemapsButton').addEventListener('click', function() {
+                openGoogleMaps();
             });
         </script>
     </body>
