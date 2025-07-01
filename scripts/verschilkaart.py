@@ -27,8 +27,24 @@ nietVlakkennetCTE = {"R030303", "MD42", "R17", "MD33", "MD63",
 #CTE codes MarkeringVlakken: "R910307", "R910517", "R910519", "R910305"
 #CTE codes OverigeVlakken: "B0503", "Q01", "Q19", "Q23", "R59", "MD34"
 
+#Clean other old uploads
+def cleanInputData(basePath, job_id):
+    tempPath = os.path.join(basePath, 'data', 'temp')
+    uitsnedeZipName = str(job_id) + '_u.zip'
+    mutatieZipName = str(job_id) + '_m.zip'
+    
+    if os.path.exists(tempPath):
+        for item in os.listdir(tempPath):
+            item_path = os.path.join(tempPath, item)
+            if item not in [uitsnedeZipName, mutatieZipName]:
+                if os.path.isfile(item_path):
+                    os.remove(item_path)
+                else:
+                    shutil.rmtree(item_path)
+                    
 #Prepare unpackage and rename uploaded zipfiles for script
 def prepareInputdata(basePath, job_id):
+    cleanInputData(basePath, job_id)
     uitsnedePathZip = os.path.join(basePath, 'data', 'temp', str(job_id)) + '_u.zip'
     mutatiePathZip = os.path.join(basePath, 'data', 'temp', str(job_id)) + '_m.zip'
     if not os.path.exists(uitsnedePathZip):
@@ -306,11 +322,11 @@ def checkShpDiff(uitsnedeFolder, mutatieFolder):
             puntChangeOld['geometry'] = puntCompare.apply(lambda row: row['geometry_u'].difference(row['geometry']), axis=1)
             puntChangeNewF = puntChangeNew[puntM.columns].copy()
             puntChangeOldF = puntChangeOld[puntM.columns].copy()
-            puntChangeNewF = puntChangeNewF[~puntChangeNewF['geometry'].is_empty]
-            puntChangeOldF = puntChangeOldF[~puntChangeOldF['geometry'].is_empty]
             puntChangeNewF.loc[:, 'STATUS'] = 'Veranderd Nieuw'
             puntChangeOldF.loc[:, 'STATUS'] = 'Veranderd Oud'
-        
+            puntChangeNewF = puntChangeNewF[~puntChangeNewF['geometry'].is_empty]
+            puntChangeOldF = puntChangeOldF[~puntChangeOldF['geometry'].is_empty]
+
         if 'puntChangeNewF' not in locals():
             puntChangeNewF = gpd.GeoDataFrame(columns=puntM.columns)
         if 'puntChangeOldF' not in locals():
@@ -353,10 +369,10 @@ def checkShpDiff(uitsnedeFolder, mutatieFolder):
             lijnChangeOld['geometry'] = lijnCompare.apply(lambda row: row['geometry_u'].difference(row['geometry']), axis=1)
             lijnChangeNewF = lijnChangeNew[lijnM.columns].copy()
             lijnChangeOldF = lijnChangeOld[lijnM.columns].copy()
-            lijnChangeNewF = lijnChangeNewF[~lijnChangeNewF['geometry'].is_empty]
-            lijnChangeOldF = lijnChangeOldF[~lijnChangeOldF['geometry'].is_empty]
             lijnChangeNewF.loc[:, 'STATUS'] = 'Veranderd Nieuw'
             lijnChangeOldF.loc[:, 'STATUS'] = 'Veranderd Oud'
+            lijnChangeNewF = lijnChangeNewF[~lijnChangeNewF['geometry'].is_empty]
+            lijnChangeOldF = lijnChangeOldF[~lijnChangeOldF['geometry'].is_empty]
 
         lijnDifference = gpd.GeoDataFrame(pd.concat([lijnNew, lijnDel, lijnChange, lijnChangeNewF, lijnChangeOldF], ignore_index=True))
     
@@ -404,10 +420,10 @@ def checkShpDiff(uitsnedeFolder, mutatieFolder):
             vlakChangeOld['geometry'] = vlakCompare.apply(lambda row: row['geometry_u'].difference(row['geometry']), axis=1)
             vlakChangeNewF = vlakChangeNew[vlakM.columns].copy()
             vlakChangeOldF = vlakChangeOld[vlakM.columns].copy()
-            vlakChangeNewF = vlakChangeNewF[~vlakChangeNewF['geometry'].is_empty]
-            vlakChangeOldF = vlakChangeOldF[~vlakChangeOldF['geometry'].is_empty]
             vlakChangeNewF.loc[:, 'STATUS'] = 'Veranderd Nieuw'
             vlakChangeOldF.loc[:, 'STATUS'] = 'Veranderd Oud'
+            vlakChangeNewF = vlakChangeNewF[~vlakChangeNewF['geometry'].is_empty]
+            vlakChangeOldF = vlakChangeOldF[~vlakChangeOldF['geometry'].is_empty]
         
         #Compare the vlakkennet
         if not vlaknetM.empty:
