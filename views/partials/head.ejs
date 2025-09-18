@@ -1,5 +1,5 @@
 <head>
-    <title>DTB Tools</title>
+    <title id="kaartId">DTB Verschilkaart</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
     <link rel="stylesheet" href="/styles.css">
@@ -7,4 +7,12 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
     <script src="https://unpkg.com/esri-leaflet/dist/esri-leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@turf/turf"></script>
+    <script>
+        const urlname = new URLSearchParams(window.location.search);
+        const geojsonId = urlname.get('geojsonId');
+        if (geojsonId) {
+            document.getElementById('kaartId').textContent = geojsonId;
+            document.title = "DTB Verschilkaart: " + geojsonId;
+        }
+    </script>
 </head>
