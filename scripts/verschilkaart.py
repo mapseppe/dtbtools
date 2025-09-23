@@ -223,6 +223,7 @@ def checkGdbDiff(uitsnedePath, layersUitsnede, mutatiePath, layersMutatie):
     #Combine all difference-geodataframes and use lookuptable to add TYPE field and save to geojson
     outputGdf["geometry"] = outputGdf.geometry.apply(force_2d)
     outputGdf['TYPE_o'] = outputGdf['TYPE_o'].astype('Int64')
+    outputGdf['TYPE'] = outputGdf['TYPE'].astype('Int64')
     lookupTableFile = os.path.join(scriptDirectory, 'object_conversion.csv')
     lookupTable = pd.read_csv(lookupTableFile, delimiter=',')
     lookupTable_unique = lookupTable.drop_duplicates(subset='TYPE_CODE')
